@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: egi-inventario
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: carlamndz/inventario-web:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: SQLSERVER_HOST
+              value: "sqlserver"
+            - name: SQLSERVER_PORT
+              value: "1433"
+            - name: SQLSERVER_USER
+              value: "sa"
+            - name: SQLSERVER_PASSWORD
+              value: "ITU_egi2026!"
+            - name: SQLSERVER_DB
+              value: "inventario_itu"
+            - name: MONGODB_HOST
+              value: "mongodb"
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: MONGODB_USER
+              value: "admin"
+            - name: MONGODB_PASSWORD
+              value: "ITU_egi2026!"
+            - name: MONGODB_DB
+              value: "inventario_hardware"
+            - name: LDAP_HOST
+              value: "ldap"
+            - name: LDAP_PORT
+              value: "389"
+            - name: LDAP_DOMAIN
+              value: "itu.edu.ar"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"

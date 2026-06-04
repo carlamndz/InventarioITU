@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlserver
+  namespace: egi-inventario
+  labels:
+    app: sqlserver
+spec:
+  selector:
+    app: sqlserver
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433
+  type: ClusterIP

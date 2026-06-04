@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ldap
+  namespace: egi-inventario
+  labels:
+    app: ldap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ldap
+  template:
+    metadata:
+      labels:
+        app: ldap
+    spec:
+      containers:
+        - name: ldap
+          image: osixia/openldap:1.5.0
+          ports:
+            - containerPort: 389
+          env:
+            - name: LDAP_ORGANISATION
+              value: "ITU Mendoza"
+            - name: LDAP_DOMAIN
+              value: "itu.edu.ar"
+            - name: LDAP_ADMIN_PASSWORD
+              value: "ITU_egi2026!"
+            - name: LDAP_CONFIG_PASSWORD
+              value: "ITU_egi2026!"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
