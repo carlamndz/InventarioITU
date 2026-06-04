@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITU Inventario · Responsables</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5; --sidebar: #1B2A4A; --sidebar-hover: #243659; --sidebar-active: #2E4A7A;
+  --accent: #2563EB; --accent-light: #EFF6FF; --white: #FFFFFF;
+  --text: #1E293B; --text-muted: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+  --green: #16A34A; --green-bg: #DCFCE7; --red: #DC2626; --red-bg: #FEE2E2;
+  --yellow: #D97706; --yellow-bg: #FEF3C7; --blue-bg: #DBEAFE;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --ff: 'IBM Plex Sans', sans-serif; --fm: 'IBM Plex Mono', monospace;
+}
+body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+
+.sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.sidebar-section { padding: 16px 12px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); font-weight: 500; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; margin: 1px 8px; color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer; transition: all .2s; text-decoration: none; }
+.sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
+.sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
+.sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
+
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; flex-direction: column; }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-sub { font-size: 11px; color: var(--text-muted); }
+.topbar-right { display: flex; gap: 8px; }
+
+.btn { padding: 7px 16px; border-radius: 8px; font-family: var(--ff); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; border: none; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+.btn-danger:hover { background: #FEE2E2; }
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+
+.content { padding: 24px 28px; }
+
+/* STATS */
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; }
+.stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.stat-icon.blue { background: var(--blue-bg); }
+.stat-icon.green { background: var(--green-bg); }
+.stat-icon.yellow { background: var(--yellow-bg); }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+.stat-value { font-size: 22px; font-weight: 700; font-family: var(--fm); }
+
+/* TABLE */
+.table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.table-title { font-size: 14px; font-weight: 600; }
+.table-search { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; }
+.table-search input { background: none; border: none; outline: none; font-family: var(--ff); font-size: 13px; color: var(--text); width: 200px; }
+.table-search input::placeholder { color: var(--text-light); }
+
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: #F8FAFC; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFBFC; }
+
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.blue { background: var(--blue-bg); color: var(--accent); }
+.badge.green { background: var(--green-bg); color: var(--green); }
+
+.avatar-cell { display: flex; align-items: center; gap: 10px; }
+.avatar-sm { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.dni-text { font-family: var(--fm); font-size: 12px; color: var(--text-muted); }
+.actions { display: flex; gap: 6px; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.visible { display: flex; }
+.modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.fl { font-size: 12px; font-weight: 500; color: var(--text); }
+.fi, .fsel { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--ff); font-size: 13px; color: var(--text); background: white; outline: none; transition: border-color .2s; }
+.fi:focus, .fsel:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.fi::placeholder { color: var(--text-light); }
+.fsel { appearance: none; cursor: pointer; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* CONFIRM */
+.confirm-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+.confirm-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+.confirm-desc { font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.6; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 2000; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.15); transform: translateY(80px); opacity: 0; transition: all .3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { background: var(--green-bg); color: var(--green); border: 1px solid #BBF7D0; }
+.toast.err { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+</style>
+<link rel="icon" type="image/png" href="/logoitu.png">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+   <img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+  </div>
+  <div class="sidebar-section">Principal</div>
+  <a href="/dashboard.html" class="sidebar-link"><span class="sidebar-icon">⊞</span> Dashboard</a>
+  <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
+  <div class="sidebar-section">Gestión</div>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
+  <a href="/responsables.html" class="sidebar-link active"><span class="sidebar-icon">👤</span> Responsables</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar">A</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-nombre">—</div>
+        <div class="sidebar-user-role" id="sidebar-rol">—</div>
+      </div>
+    </div>
+    <button onclick="cerrarSesion()" style="width:100%;margin-top:8px;padding:8px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#FCA5A5;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(220,38,38,.25)'" onmouseout="this.style.background='rgba(220,38,38,.15)'">
+      ↪ Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Responsables</span>
+      <span class="topbar-sub">Personal autorizado del sistema</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" onclick="abrirAgregar()">+ Agregar responsable</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">👥</div>
+        <div>
+          <div class="stat-label">Total responsables</div>
+          <div class="stat-value" id="stat-total">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">🛡</div>
+        <div>
+          <div class="stat-label">Administradores</div>
+          <div class="stat-value" id="stat-admins">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">👤</div>
+        <div>
+          <div class="stat-label">Usuarios comunes</div>
+          <div class="stat-value" id="stat-usuarios">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title">Listado de responsables</span>
+        <div class="table-search">
+          <span style="color:var(--text-light)">🔍</span>
+          <input type="text" id="buscador" placeholder="Buscar por nombre o DNI..." oninput="filtrarTabla()">
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Responsable</th>
+            <th>DNI</th>
+            <th>Rol</th>
+            <th>Equipos asignados</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-responsables"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL AGREGAR/EDITAR -->
+<div class="modal-overlay" id="modal-form">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-form-title">Agregar responsable</span>
+      <button class="modal-close" onclick="cerrarModal('modal-form')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg">
+          <label class="fl">Nombre</label>
+          <input type="text" class="fi" id="f-nombre" placeholder="Ej: Lucas">
+        </div>
+        <div class="fg">
+          <label class="fl">Apellido</label>
+          <input type="text" class="fi" id="f-apellido" placeholder="Ej: Vicino">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">DNI</label>
+        <input type="text" class="fi" id="f-dni" placeholder="Ej: 40123456">
+      </div>
+      <div class="fg">
+        <label class="fl">Rol</label>
+        <select class="fsel" id="f-rol">
+          <option value="administrador">Administrador</option>
+          <option value="usuario">Usuario común</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-form')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarResponsable()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal-overlay" id="modal-eliminar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Confirmar eliminación</span>
+      <button class="modal-close" onclick="cerrarModal('modal-eliminar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon">🗑</div>
+      <div class="confirm-title">¿Eliminar responsable?</div>
+      <p class="confirm-desc">Vas a eliminar a <b id="confirm-nombre">—</b> del sistema. Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const usuario = JSON.parse(localStorage.getItem('usuario'))
+if (!usuario) window.location.href = '/login.html'
+document.getElementById('sidebar-nombre').textContent = usuario.nombre
+document.getElementById('sidebar-rol').textContent = usuario.rol
+document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
+
+const colores = ['#2563EB','#16A34A','#D97706','#9333EA','#0891B2','#DC2626']
+function colorAvatar(i) { return colores[i % colores.length] }
+
+// Datos de prueba - después se conecta con LDAP/SQL Server
+let responsables = [
+  { id:1, nombre:'Lucas',   apellido:'Vicino',   dni:'40123456', rol:'administrador', equipos: 2 },
+  { id:2, nombre:'Augusto', apellido:'Rojas',    dni:'41234567', rol:'administrador', equipos: 1 },
+  { id:3, nombre:'Bruno',   apellido:'Olaiz',    dni:'42345678', rol:'usuario',       equipos: 3 },
+  { id:4, nombre:'Sol',     apellido:'Melocchi', dni:'43456789', rol:'usuario',       equipos: 1 },
+  { id:5, nombre:'Nicolas', apellido:'Perez',    dni:'44567890', rol:'usuario',       equipos: 2 },
+]
+
+let editandoId = null
+let eliminandoId = null
+
+function renderStats() {
+  document.getElementById('stat-total').textContent = responsables.length
+  document.getElementById('stat-admins').textContent = responsables.filter(r => r.rol === 'administrador').length
+  document.getElementById('stat-usuarios').textContent = responsables.filter(r => r.rol === 'usuario').length
+}
+
+function renderTabla(lista) {
+  const tbody = document.getElementById('tabla-responsables')
+  if (!lista) lista = responsables
+  if (lista.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">No se encontraron responsables</td></tr>`
+    return
+  }
+  tbody.innerHTML = lista.map((r, i) => `
+    <tr>
+      <td>
+        <div class="avatar-cell">
+          <div class="avatar-sm" style="background:${colorAvatar(i)}">${r.nombre.charAt(0)}${r.apellido.charAt(0)}</div>
+          <div>
+            <div style="font-weight:500">${r.apellido}, ${r.nombre}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="dni-text">${r.dni}</span></td>
+      <td>${r.rol === 'administrador'
+        ? '<span class="badge blue">Administrador</span>'
+        : '<span class="badge green">Usuario común</span>'}</td>
+      <td style="font-family:var(--fm);color:var(--accent)">${r.equipos} equipo(s)</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-secondary btn-sm" onclick="abrirEditar(${r.id})">✏ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="abrirEliminar(${r.id})">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('')
+}
+
+function filtrarTabla() {
+  const q = document.getElementById('buscador').value.toLowerCase()
+  const filtrados = responsables.filter(r =>
+    r.nombre.toLowerCase().includes(q) ||
+    r.apellido.toLowerCase().includes(q) ||
+    r.dni.includes(q)
+  )
+  renderTabla(filtrados)
+}
+
+function abrirAgregar() {
+  editandoId = null
+  document.getElementById('modal-form-title').textContent = 'Agregar responsable'
+  document.getElementById('f-nombre').value = ''
+  document.getElementById('f-apellido').value = ''
+  document.getElementById('f-dni').value = ''
+  document.getElementById('f-rol').value = 'usuario'
+  document.getElementById('modal-form').classList.add('visible')
+}
+
+function abrirEditar(id) {
+  const r = responsables.find(x => x.id === id)
+  if (!r) return
+  editandoId = id
+  document.getElementById('modal-form-title').textContent = 'Editar responsable'
+  document.getElementById('f-nombre').value = r.nombre
+  document.getElementById('f-apellido').value = r.apellido
+  document.getElementById('f-dni').value = r.dni
+  document.getElementById('f-rol').value = r.rol
+  document.getElementById('modal-form').classList.add('visible')
+}
+
+function guardarResponsable() {
+  const nombre   = document.getElementById('f-nombre').value.trim()
+  const apellido = document.getElementById('f-apellido').value.trim()
+  const dni      = document.getElementById('f-dni').value.trim()
+  const rol      = document.getElementById('f-rol').value
+
+  if (!nombre || !apellido || !dni) {
+    showToast('⚠ Completá todos los campos', 'err')
+    return
+  }
+
+  if (editandoId) {
+    const idx = responsables.findIndex(r => r.id === editandoId)
+    responsables[idx] = { ...responsables[idx], nombre, apellido, dni, rol }
+    showToast('✓ Responsable actualizado', 'ok')
+  } else {
+    const newId = Math.max(...responsables.map(r => r.id)) + 1
+    responsables.push({ id: newId, nombre, apellido, dni, rol, equipos: 0 })
+    showToast('✓ Responsable agregado', 'ok')
+  }
+
+  cerrarModal('modal-form')
+  renderStats()
+  renderTabla()
+}
+
+function abrirEliminar(id) {
+  const r = responsables.find(x => x.id === id)
+  eliminandoId = id
+  document.getElementById('confirm-nombre').textContent = `${r.nombre} ${r.apellido}`
+  document.getElementById('modal-eliminar').classList.add('visible')
+}
+
+function confirmarEliminar() {
+  responsables = responsables.filter(r => r.id !== eliminandoId)
+  cerrarModal('modal-eliminar')
+  renderStats()
+  renderTabla()
+  showToast('🗑 Responsable eliminado', 'ok')
+}
+
+function cerrarModal(id) { document.getElementById(id).classList.remove('visible') }
+
+function showToast(msg, tipo) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.className = 'toast ' + tipo + ' show'
+  setTimeout(() => t.className = 'toast ' + tipo, 3000)
+}
+
+renderStats()
+renderTabla()
+</script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITU Inventario · Dashboard</title>
+<link rel="icon" type="image/png" href="/logoitu.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5; --sidebar: #1B2A4A; --sidebar-hover: #243659; --sidebar-active: #2E4A7A;
+  --accent: #2563EB; --accent-light: #EFF6FF; --white: #FFFFFF;
+  --text: #1E293B; --text-muted: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+  --green: #16A34A; --green-bg: #DCFCE7; --red: #DC2626; --red-bg: #FEE2E2;
+  --yellow: #D97706; --yellow-bg: #FEF3C7; --blue-bg: #DBEAFE;
+  --shadow: 0 1px 3px rgba(0,0,0,.08); --shadow-md: 0 4px 6px rgba(0,0,0,.07);
+  --ff: 'IBM Plex Sans', sans-serif; --fm: 'IBM Plex Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+
+.sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.sidebar-section { padding: 16px 12px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); font-weight: 500; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; margin: 1px 8px; color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer; transition: all .2s; text-decoration: none; }
+.sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
+.sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
+.sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
+
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; flex-direction: column; }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-sub { font-size: 11px; color: var(--text-muted); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.topbar-btn { padding: 7px 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: var(--ff); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s; }
+.topbar-btn:hover { background: #1d4ed8; }
+.btn-outline { background: white; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn-outline:hover { background: var(--accent-light); }
+
+.content { padding: 24px 28px; flex: 1; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.stat-icon.blue { background: var(--blue-bg); } .stat-icon.green { background: var(--green-bg); }
+.stat-icon.yellow { background: var(--yellow-bg); } .stat-icon.red { background: var(--red-bg); }
+.stat-value { font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 6px; font-family: var(--fm); }
+.stat-change { font-size: 12px; color: var(--text-muted); }
+.stat-change.up { color: var(--green); } .stat-change.down { color: var(--red); }
+
+.table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+.table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.table-title { font-size: 14px; font-weight: 600; }
+.table-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.table-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-family: var(--ff); font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all .2s; }
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: #F8FAFC; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFBFC; }
+.pc-id { font-family: var(--fm); font-size: 12px; color: var(--accent); font-weight: 500; background: var(--accent-light); padding: 3px 8px; border-radius: 5px; display: inline-block; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.green { background: var(--green-bg); color: var(--green); }
+.badge.red { background: var(--red-bg); color: var(--red); }
+.badge.yellow { background: var(--yellow-bg); color: var(--yellow); }
+.btn-ver { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-family: var(--ff); font-size: 12px; color: var(--text); cursor: pointer; transition: all .2s; }
+.btn-ver:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid var(--border); }
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-btns { display: flex; gap: 4px; }
+.pag-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 6px; background: white; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; color: var(--text); transition: all .2s; font-family: var(--ff); }
+.pag-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pag-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 14px; font-weight: 600; }
+.card-body { padding: 16px 20px; }
+.lab-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.lab-item:last-child { border-bottom: none; }
+.lab-info { min-width: 120px; }
+.lab-name { font-size: 13px; font-weight: 500; }
+.lab-bar-wrap { flex: 1; }
+.lab-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.lab-bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.lab-pct { font-size: 12px; font-weight: 600; font-family: var(--fm); white-space: nowrap; min-width: 36px; text-align: right; }
+.activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.activity-item:last-child { border-bottom: none; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.activity-text { font-size: 12px; line-height: 1.5; }
+.activity-text b { font-weight: 600; }
+.activity-time { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+  </div>
+
+  <div class="sidebar-section">Principal</div>
+  <a href="/dashboard.html" class="sidebar-link active"><span class="sidebar-icon">⊞</span> Dashboard</a>
+  <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
+
+  <div class="sidebar-section">Gestión</div>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
+  <a href="/responsables.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar">A</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-nombre">—</div>
+        <div class="sidebar-user-role" id="sidebar-rol">—</div>
+      </div>
+    </div>
+    <button onclick="cerrarSesion()" style="width:100%;margin-top:8px;padding:8px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#FCA5A5;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(220,38,38,.25)'" onmouseout="this.style.background='rgba(220,38,38,.15)'">
+      ↪ Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Dashboard</span>
+      <span class="topbar-sub">Resumen general del inventario</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn btn-outline" onclick="window.location.href='/buscar.html'">🔍 Buscar PC</button>
+      <button class="topbar-btn" onclick="window.location.href='/agregar.html'">+ Registrar PC</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">Total equipos</span><div class="stat-icon blue">🖥</div></div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-change">registrados en el sistema</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">Operativos</span><div class="stat-icon green">✓</div></div>
+        <div class="stat-value" id="stat-operativos">—</div>
+        <div class="stat-change up" id="stat-pct-op">— del total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">En mantenimiento</span><div class="stat-icon yellow">⚙</div></div>
+        <div class="stat-value" id="stat-mantenimiento">—</div>
+        <div class="stat-change down">requieren atención</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">Fuera de servicio</span><div class="stat-icon red">✕</div></div>
+        <div class="stat-value" id="stat-fuera">—</div>
+        <div class="stat-change down">sin funcionamiento</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <div>
+          <div class="table-title">Equipos registrados</div>
+          <div class="table-sub">Listado completo del inventario</div>
+        </div>
+        <div class="table-filters">
+          <button class="filter-btn active" onclick="filtrar('todos', this)">Todos</button>
+          <button class="filter-btn" onclick="filtrar('operativo', this)">Operativos</button>
+          <button class="filter-btn" onclick="filtrar('mantenimiento', this)">Mantenimiento</button>
+          <button class="filter-btn" onclick="filtrar('fuera de servicio', this)">Fuera de servicio</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID Equipo</th><th>Laboratorio</th><th>Banco</th>
+            <th>Responsable</th><th>Último mantenimiento</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-equipos">
+          <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">Cargando equipos...</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span class="pagination-info" id="pag-info">—</span>
+        <div class="pagination-btns" id="pag-btns"></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Ocupación por laboratorio</span></div>
+        <div class="card-body" id="labs-body"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Actividad reciente</span></div>
+        <div class="card-body" id="actividad-body"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const usuario = JSON.parse(localStorage.getItem('usuario'))
+if (!usuario) window.location.href = '/login.html'
+document.getElementById('sidebar-nombre').textContent = usuario.nombre
+document.getElementById('sidebar-rol').textContent = usuario.rol
+document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
+
+const equipos = [
+  { id:'PC-LAB1-001', lab:'Laboratorio 1',  banco:'01', responsable:'Vicino, Lucas',   mantenimiento:'15/03/2025', estado:'operativo' },
+  { id:'PC-LAB1-002', lab:'Laboratorio SO', banco:'02', responsable:'Rojas, Augusto',  mantenimiento:'15/03/2025', estado:'mantenimiento' },
+  { id:'PC-LABSO-005',lab:'Laboratorio SO', banco:'05', responsable:'Olaiz, Bruno',    mantenimiento:'20/02/2025', estado:'operativo' },
+  { id:'PC-LAB4-012', lab:'Laboratorio 4',  banco:'12', responsable:'Perez, Nicolas',  mantenimiento:'10/01/2025', estado:'fuera de servicio' },
+  { id:'PC-LABSO-009',lab:'Laboratorio SO', banco:'09', responsable:'Melocchi, Sol',   mantenimiento:'01/04/2025', estado:'operativo' },
+  { id:'PC-LAB5-003', lab:'Laboratorio 5',  banco:'03', responsable:'Rojas, Augusto',  mantenimiento:'28/03/2025', estado:'mantenimiento' },
+]
+
+let filtroActual = 'todos', paginaActual = 1
+const porPagina = 6
+
+function badgeEstado(e) {
+  const map = { 'operativo':'green','mantenimiento':'yellow','fuera de servicio':'red' }
+  return `<span class="badge ${map[e]||'blue'}">${e.charAt(0).toUpperCase()+e.slice(1)}</span>`
+}
+
+function renderTabla() {
+  const filtrados = filtroActual==='todos' ? equipos : equipos.filter(e=>e.estado===filtroActual)
+  const total = filtrados.length
+  const inicio = (paginaActual-1)*porPagina
+  const pagina = filtrados.slice(inicio, inicio+porPagina)
+  const tbody = document.getElementById('tabla-equipos')
+
+  tbody.innerHTML = pagina.length === 0
+    ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">No hay equipos</td></tr>`
+    : pagina.map(e => `
+      <tr>
+        <td><span class="pc-id">${e.id}</span></td>
+        <td>${e.lab}</td>
+        <td>Banco ${e.banco}</td>
+        <td>${e.responsable}</td>
+        <td>${e.mantenimiento}</td>
+        <td>${badgeEstado(e.estado)}</td>
+        <td><button class="btn-ver" onclick="window.location.href='/detalle.html?id=${e.id}&lab=${encodeURIComponent(e.lab)}&banco=${e.banco}&responsable=${encodeURIComponent(e.responsable)}&mantenimiento=${e.mantenimiento}&estado=${e.estado}'">Ver detalle</button></td>
+      </tr>`).join('')
+
+  document.getElementById('pag-info').textContent = `Mostrando ${Math.min(inicio+1,total)}–${Math.min(inicio+porPagina,total)} de ${total} equipos`
+
+  const totalPags = Math.ceil(total/porPagina)
+  const btns = document.getElementById('pag-btns')
+  btns.innerHTML = ''
+  if (totalPags <= 1) return
+  const prev = document.createElement('button')
+  prev.className='pag-btn'; prev.textContent='←'
+  prev.onclick = () => { if(paginaActual>1){paginaActual--;renderTabla()} }
+  btns.appendChild(prev)
+  for(let i=1;i<=totalPags;i++){
+    const b=document.createElement('button')
+    b.className='pag-btn'+(i===paginaActual?' active':'')
+    b.textContent=i; b.onclick=()=>{paginaActual=i;renderTabla()}
+    btns.appendChild(b)
+  }
+  const next=document.createElement('button')
+  next.className='pag-btn'; next.textContent='→'
+  next.onclick=()=>{if(paginaActual<totalPags){paginaActual++;renderTabla()}}
+  btns.appendChild(next)
+}
+
+function filtrar(estado, btn) {
+  filtroActual=estado; paginaActual=1
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active'); renderTabla()
+}
+
+function renderStats() {
+  const total=equipos.length
+  const op=equipos.filter(e=>e.estado==='operativo').length
+  const mant=equipos.filter(e=>e.estado==='mantenimiento').length
+  const fuera=equipos.filter(e=>e.estado==='fuera de servicio').length
+  document.getElementById('stat-total').textContent=total
+  document.getElementById('stat-operativos').textContent=op
+  document.getElementById('stat-mantenimiento').textContent=mant
+  document.getElementById('stat-fuera').textContent=fuera
+  document.getElementById('stat-pct-op').textContent=Math.round((op/total)*100)+'% del total'
+}
+
+function renderLabs() {
+  const labs=[
+    {nombre:'Laboratorio SO',total:32,activos:29,color:'#16A34A'},
+    {nombre:'Laboratorio 1', total:28,activos:21,color:'#2563EB'},
+    {nombre:'Laboratorio 4', total:24,activos:14,color:'#D97706'},
+    {nombre:'Laboratorio 5', total:36,activos:32,color:'#16A34A'},
+  ]
+  document.getElementById('labs-body').innerHTML=labs.map(l=>`
+    <div class="lab-item">
+      <div class="lab-info"><div class="lab-name">${l.nombre}</div></div>
+      <div class="lab-bar-wrap"><div class="lab-bar-track"><div class="lab-bar-fill" style="width:${Math.round((l.activos/l.total)*100)}%;background:${l.color}"></div></div></div>
+      <span class="lab-pct">${l.activos}/${l.total}</span>
+    </div>`).join('')
+}
+
+function renderActividad() {
+  const items=[
+    {color:'#16A34A',texto:'<b>PC-LAB1-001</b> marcada como operativa',tiempo:'Hace 15 min'},
+    {color:'#D97706',texto:'<b>PC-LAB4-003</b> enviada a mantenimiento — falla RAM',tiempo:'Hace 1 hora'},
+    {color:'#2563EB',texto:'<b>PC-LABSO-005</b> registrada como nuevo equipo',tiempo:'Hace 2 horas'},
+    {color:'#DC2626',texto:'<b>PC-LAB4-012</b> fuera de servicio — disco dañado',tiempo:'Ayer 16:30'},
+    {color:'#16A34A',texto:'<b>PC-LAB1-001</b> actualizada — nuevo SSD instalado',tiempo:'Ayer 14:00'},
+  ]
+  document.getElementById('actividad-body').innerHTML=items.map(i=>`
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${i.color}"></div>
+      <div><div class="activity-text">${i.texto}</div><div class="activity-time">${i.tiempo}</div></div>
+    </div>`).join('')
+}
+
+renderStats(); renderTabla(); renderLabs(); renderActividad()
+</script>
+</body>
+</html>
