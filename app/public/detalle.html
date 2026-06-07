@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITU Inventario · Detalle de equipo</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5; --sidebar: #1B2A4A; --sidebar-hover: #243659; --sidebar-active: #2E4A7A;
+  --accent: #2563EB; --accent-light: #EFF6FF; --white: #FFFFFF;
+  --text: #1E293B; --text-muted: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+  --green: #16A34A; --green-bg: #DCFCE7; --red: #DC2626; --red-bg: #FEE2E2;
+  --yellow: #D97706; --yellow-bg: #FEF3C7; --blue-bg: #DBEAFE;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --ff: 'IBM Plex Sans', sans-serif; --fm: 'IBM Plex Mono', monospace;
+}
+body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+.sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.sidebar-section { padding: 16px 12px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); font-weight: 500; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; margin: 1px 8px; color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer; transition: all .2s; text-decoration: none; }
+.sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
+.sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
+.sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-badge { margin-left: auto; background: var(--accent); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+.sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
+.sidebar-logout { margin-left: auto; font-size: 13px; color: rgba(255,255,255,.3); cursor: pointer; background: none; border: none; transition: color .2s; }
+.sidebar-logout:hover { color: rgba(255,255,255,.8); }
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-back { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color .2s; }
+.topbar-back:hover { color: var(--accent); }
+.topbar-sep { color: var(--border); }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+.btn { padding: 7px 16px; border-radius: 8px; font-family: var(--ff); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; border: none; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-warning { background: var(--yellow-bg); color: var(--yellow); border: 1px solid #FDE68A; }
+.btn-warning:hover { background: #FEF08A; }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+.btn-danger:hover { background: #FEE2E2; }
+.btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.content { padding: 24px 28px; }
+.pc-header { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.pc-header-left { display: flex; align-items: center; gap: 16px; }
+.pc-icon { width: 56px; height: 56px; background: var(--blue-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+.pc-id-big { font-family: var(--fm); font-size: 20px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+.pc-tipo { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.green { background: var(--green-bg); color: var(--green); }
+.badge.red { background: var(--red-bg); color: var(--red); }
+.badge.yellow { background: var(--yellow-bg); color: var(--yellow); }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+.card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.card-header-icon { font-size: 16px; }
+.card-title { font-size: 13px; font-weight: 600; }
+.card-source { margin-left: auto; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.card-source.sql { background: #DBEAFE; color: #1d4ed8; }
+.card-source.mongo { background: #DCFCE7; color: #15803d; }
+.card-body { padding: 16px 20px; }
+.field-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F8FAFC; gap: 12px; }
+.field-row:last-child { border-bottom: none; }
+.field-label { font-size: 12px; color: var(--text-muted); font-weight: 500; flex-shrink: 0; min-width: 130px; }
+.field-value { font-size: 13px; color: var(--text); text-align: right; word-break: break-word; }
+.field-value.mono { font-family: var(--fm); font-size: 12px; color: var(--accent); }
+.field-value.tag { background: var(--bg); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.visible { display: flex; }
+.modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 560px; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; }
+.modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.fl { font-size: 12px; font-weight: 500; color: var(--text); }
+.fi, .fsel { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--ff); font-size: 13px; color: var(--text); background: white; outline: none; transition: border-color .2s; }
+.fi:focus, .fsel:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.fsel { appearance: none; cursor: pointer; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-section { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.confirm-icon { font-size: 48px; text-align: center; margin-bottom: 12px; }
+.confirm-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+.confirm-desc { font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.6; }
+.confirm-pc { font-family: var(--fm); color: var(--red); font-weight: 600; }
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 2000; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.15); transform: translateY(80px); opacity: 0; transition: all .3s; display: flex; align-items: center; gap: 8px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { background: var(--green-bg); color: var(--green); border: 1px solid #BBF7D0; }
+.toast.err { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+</style>
+<link rel="icon" type="image/png" href="/logoitu.png">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+<img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+  </div>
+  <div class="sidebar-section">Principal</div>
+  <a href="/dashboard.html" class="sidebar-link"><span class="sidebar-icon">⊞</span> Dashboard</a>
+  <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
+  <div class="sidebar-section">Gestión</div>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar">A</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-nombre">—</div>
+        <div class="sidebar-user-role" id="sidebar-rol">—</div>
+      </div>
+      <button class="sidebar-logout" onclick="cerrarSesion()">↪</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/dashboard.html" class="topbar-back">← Volver</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title" id="topbar-id">Detalle de equipo</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-warning" onclick="abrirEditar()">✏ Editar</button>
+      <button class="btn btn-danger" onclick="abrirEliminar()">🗑 Eliminar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="pc-header">
+      <div class="pc-header-left">
+        <div class="pc-icon">🖥</div>
+        <div>
+          <div class="pc-id-big" id="pc-id">—</div>
+          <div class="pc-tipo"><span id="pc-tipo">—</span><span>·</span><span id="pc-so">—</span></div>
+        </div>
+      </div>
+      <span class="badge green" id="pc-estado-badge">Operativo</span>
+    </div>
+
+    <div class="detail-grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header-icon">📍</span>
+          <span class="card-title">Ubicación y asignación</span>
+          <span class="card-source sql">SQL Server</span>
+        </div>
+        <div class="card-body">
+          <div class="field-row"><span class="field-label">ID Equipo</span><span class="field-value mono" id="d-id">—</span></div>
+          <div class="field-row"><span class="field-label">Laboratorio</span><span class="field-value" id="d-lab">—</span></div>
+          <div class="field-row"><span class="field-label">Banco / Mesa</span><span class="field-value" id="d-banco">—</span></div>
+          <div class="field-row"><span class="field-label">Responsable</span><span class="field-value" id="d-responsable">—</span></div>
+          <div class="field-row"><span class="field-label">Último mantenimiento</span><span class="field-value" id="d-mantenimiento">—</span></div>
+          <div class="field-row"><span class="field-label">Estado</span><span class="field-value" id="d-estado">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header-icon">⚙</span>
+          <span class="card-title">Hardware instalado</span>
+          <span class="card-source mongo">MongoDB</span>
+        </div>
+        <div class="card-body">
+          <div class="field-row"><span class="field-label">Fabricante</span><span class="field-value" id="d-fabricante">—</span></div>
+          <div class="field-row"><span class="field-label">Modelo</span><span class="field-value" id="d-modelo">—</span></div>
+          <div class="field-row"><span class="field-label">Procesador (CPU)</span><span class="field-value tag" id="d-cpu">—</span></div>
+          <div class="field-row"><span class="field-label">Memoria RAM</span><span class="field-value tag" id="d-ram">—</span></div>
+          <div class="field-row"><span class="field-label">Almacenamiento</span><span class="field-value tag" id="d-disco">—</span></div>
+          <div class="field-row"><span class="field-label">Sistema Operativo</span><span class="field-value" id="d-so">—</span></div>
+          <div class="field-row"><span class="field-label">Monitor</span><span class="field-value" id="d-monitor">—</span></div>
+          <div class="field-row"><span class="field-label">Periféricos</span><span class="field-value" id="d-perifericos">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✏ Editar equipo</span>
+      <button class="modal-close" onclick="cerrarModal('modal-editar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">📍 Ubicación — SQL Server</div>
+      <div class="form-grid">
+        <div class="fg"><label class="fl">Laboratorio</label>
+          <select class="fsel" id="e-lab">
+            <option value="Laboratorio SO">Laboratorio SO</option>
+            <option value="Laboratorio 1">Laboratorio 1</option>
+            <option value="Laboratorio 4">Laboratorio 4</option>
+            <option value="Laboratorio 5">Laboratorio 5</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Banco / Mesa</label><input type="text" class="fi" id="e-banco"></div>
+        <div class="fg"><label class="fl">Responsable</label><input type="text" class="fi" id="e-responsable"></div>
+        <div class="fg"><label class="fl">Último mantenimiento</label><input type="date" class="fi" id="e-mantenimiento"></div>
+        <div class="fg"><label class="fl">Estado</label>
+          <select class="fsel" id="e-estado">
+            <option value="operativo">Operativo</option>
+            <option value="mantenimiento">En mantenimiento</option>
+            <option value="fuera de servicio">Fuera de servicio</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">⚙ Hardware — MongoDB</div>
+      <div class="form-grid">
+        <div class="fg"><label class="fl">Fabricante</label><input type="text" class="fi" id="e-fabricante"></div>
+        <div class="fg"><label class="fl">Modelo</label><input type="text" class="fi" id="e-modelo"></div>
+        <div class="fg"><label class="fl">CPU</label><input type="text" class="fi" id="e-cpu"></div>
+        <div class="fg"><label class="fl">RAM</label><input type="text" class="fi" id="e-ram"></div>
+        <div class="fg"><label class="fl">Disco</label><input type="text" class="fi" id="e-disco"></div>
+        <div class="fg"><label class="fl">Sistema Operativo</label><input type="text" class="fi" id="e-so"></div>
+        <div class="fg"><label class="fl">Monitor</label><input type="text" class="fi" id="e-monitor"></div>
+        <div class="fg"><label class="fl">Tipo</label>
+          <select class="fsel" id="e-tipo"><option value="Desktop">Desktop</option><option value="Laptop">Laptop</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-editar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal-overlay" id="modal-eliminar">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Confirmar eliminación</span>
+      <button class="modal-close" onclick="cerrarModal('modal-eliminar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon">🗑</div>
+      <div class="confirm-title">¿Eliminar este equipo?</div>
+      <p class="confirm-desc">Vas a eliminar el equipo <span class="confirm-pc" id="confirm-id">—</span>. Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const usuario = JSON.parse(localStorage.getItem('usuario'))
+if (!usuario) window.location.href = '/login.html'
+document.getElementById('sidebar-nombre').textContent = usuario.nombre
+document.getElementById('sidebar-rol').textContent = usuario.rol
+document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
+
+const params = new URLSearchParams(window.location.search)
+
+const datosPC = {
+  id:            params.get('id')            || 'PC-LAB1-001',
+  lab:           params.get('lab')           || 'Laboratorio 1',
+  banco:         params.get('banco')         || '01',
+  responsable:   params.get('responsable')   || 'Sin asignar',
+  mantenimiento: params.get('mantenimiento') || 'Sin registro',
+  estado:        params.get('estado')        || 'operativo',
+  fabricante:    params.get('fabricante')    || 'Dell',
+  modelo:        params.get('modelo')        || 'OptiPlex 7090',
+  cpu:           params.get('cpu')           || 'Intel Core i5-10500 @ 3.1GHz',
+  ram:           params.get('ram')           || '8 GB DDR4',
+  disco:         params.get('disco')         || '256 GB SSD',
+  so:            params.get('so')            || 'Ubuntu 22.04 LTS',
+  monitor:       params.get('monitor')       || 'Dell 22" Full HD',
+  perifericos:   params.get('perifericos')   || 'Mouse + Teclado USB',
+  tipo:          params.get('tipo')          || 'Desktop',
+}
+
+let pcActual = { ...datosPC }
+
+function badgeClass(e) { return e==='operativo'?'green':e==='mantenimiento'?'yellow':'red' }
+
+function renderDetalle(pc) {
+  document.getElementById('topbar-id').textContent = pc.id
+  document.getElementById('pc-id').textContent = pc.id
+  document.getElementById('pc-tipo').textContent = pc.tipo
+  document.getElementById('pc-so').textContent = pc.so
+  const badge = document.getElementById('pc-estado-badge')
+  badge.textContent = pc.estado.charAt(0).toUpperCase() + pc.estado.slice(1)
+  badge.className = 'badge ' + badgeClass(pc.estado)
+  document.getElementById('d-id').textContent = pc.id
+  document.getElementById('d-lab').textContent = pc.lab
+  document.getElementById('d-banco').textContent = 'Banco ' + pc.banco
+  document.getElementById('d-responsable').textContent = pc.responsable
+  document.getElementById('d-mantenimiento').textContent = pc.mantenimiento
+  document.getElementById('d-estado').textContent = pc.estado.charAt(0).toUpperCase() + pc.estado.slice(1)
+  document.getElementById('d-fabricante').textContent = pc.fabricante
+  document.getElementById('d-modelo').textContent = pc.modelo
+  document.getElementById('d-cpu').textContent = pc.cpu
+  document.getElementById('d-ram').textContent = pc.ram
+  document.getElementById('d-disco').textContent = pc.disco
+  document.getElementById('d-so').textContent = pc.so
+  document.getElementById('d-monitor').textContent = pc.monitor
+  document.getElementById('d-perifericos').textContent = pc.perifericos
+}
+
+function abrirEditar() {
+  document.getElementById('e-lab').value = pcActual.lab
+  document.getElementById('e-banco').value = pcActual.banco
+  document.getElementById('e-responsable').value = pcActual.responsable
+  document.getElementById('e-mantenimiento').value = pcActual.mantenimiento
+  document.getElementById('e-estado').value = pcActual.estado
+  document.getElementById('e-fabricante').value = pcActual.fabricante
+  document.getElementById('e-modelo').value = pcActual.modelo
+  document.getElementById('e-cpu').value = pcActual.cpu
+  document.getElementById('e-ram').value = pcActual.ram
+  document.getElementById('e-disco').value = pcActual.disco
+  document.getElementById('e-so').value = pcActual.so
+  document.getElementById('e-monitor').value = pcActual.monitor
+  document.getElementById('e-tipo').value = pcActual.tipo
+  document.getElementById('modal-editar').classList.add('visible')
+}
+
+function guardarEdicion() {
+  pcActual = { ...pcActual,
+    lab: document.getElementById('e-lab').value,
+    banco: document.getElementById('e-banco').value,
+    responsable: document.getElementById('e-responsable').value,
+    mantenimiento: document.getElementById('e-mantenimiento').value,
+    estado: document.getElementById('e-estado').value,
+    fabricante: document.getElementById('e-fabricante').value,
+    modelo: document.getElementById('e-modelo').value,
+    cpu: document.getElementById('e-cpu').value,
+    ram: document.getElementById('e-ram').value,
+    disco: document.getElementById('e-disco').value,
+    so: document.getElementById('e-so').value,
+    monitor: document.getElementById('e-monitor').value,
+    tipo: document.getElementById('e-tipo').value,
+  }
+  renderDetalle(pcActual)
+  cerrarModal('modal-editar')
+  showToast('✓ Equipo actualizado correctamente', 'ok')
+}
+
+function abrirEliminar() {
+  document.getElementById('confirm-id').textContent = pcActual.id
+  document.getElementById('modal-eliminar').classList.add('visible')
+}
+
+function confirmarEliminar() {
+  cerrarModal('modal-eliminar')
+  showToast('🗑 Equipo eliminado del inventario', 'ok')
+  setTimeout(() => window.location.href = '/dashboard.html', 1500)
+}
+
+function cerrarModal(id) { document.getElementById(id).classList.remove('visible') }
+function showToast(msg, tipo) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.className = 'toast ' + tipo + ' show'
+  setTimeout(() => t.className = 'toast ' + tipo, 3000)
+}
+
+renderDetalle(pcActual)
+</script>
+</body>
+</html>

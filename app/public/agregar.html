@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITU Inventario · Agregar equipo</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5; --sidebar: #1B2A4A; --sidebar-hover: #243659; --sidebar-active: #2E4A7A;
+  --accent: #2563EB; --accent-light: #EFF6FF; --white: #FFFFFF;
+  --text: #1E293B; --text-muted: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+  --green: #16A34A; --green-bg: #DCFCE7; --red: #DC2626; --red-bg: #FEE2E2;
+  --yellow: #D97706; --yellow-bg: #FEF3C7; --blue-bg: #DBEAFE;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --ff: 'IBM Plex Sans', sans-serif; --fm: 'IBM Plex Mono', monospace;
+}
+body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+.sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.sidebar-section { padding: 16px 12px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); font-weight: 500; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; margin: 1px 8px; color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer; transition: all .2s; text-decoration: none; }
+.sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
+.sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
+.sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-badge { margin-left: auto; background: var(--accent); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+.sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
+.sidebar-logout { margin-left: auto; font-size: 13px; color: rgba(255,255,255,.3); cursor: pointer; background: none; border: none; transition: color .2s; }
+.sidebar-logout:hover { color: rgba(255,255,255,.8); }
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-back { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color .2s; }
+.topbar-back:hover { color: var(--accent); }
+.topbar-sep { color: var(--border); }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.btn { padding: 7px 16px; border-radius: 8px; font-family: var(--ff); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; border: none; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+.btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.content { padding: 24px 28px; }
+.form-wrap { max-width: 860px; }
+.form-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 16px; overflow: hidden; }
+.form-card-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.form-card-icon { font-size: 18px; }
+.form-card-title { font-size: 14px; font-weight: 600; }
+.form-card-source { margin-left: auto; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.form-card-source.sql { background: #DBEAFE; color: #1d4ed8; }
+.form-card-source.mongo { background: #DCFCE7; color: #15803d; }
+.form-card-body { padding: 20px 24px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fl { font-size: 12px; font-weight: 500; color: var(--text); }
+.fl span { color: var(--red); margin-left: 2px; }
+.fi, .fsel { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--ff); font-size: 13px; color: var(--text); background: white; outline: none; transition: border-color .2s, box-shadow .2s; }
+.fi:focus, .fsel:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.fi::placeholder { color: var(--text-light); }
+.fsel { appearance: none; cursor: pointer; }
+.fi.error { border-color: var(--red); }
+.field-hint { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+.field-error { font-size: 11px; color: var(--red); margin-top: 3px; display: none; }
+.field-error.visible { display: block; }
+.id-preview { background: var(--accent-light); border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.id-preview-label { font-size: 11px; color: #1e40af; font-weight: 500; }
+.id-preview-value { font-family: var(--fm); font-size: 14px; color: var(--accent); font-weight: 600; margin-left: auto; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 2000; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.15); transform: translateY(80px); opacity: 0; transition: all .3s; display: flex; align-items: center; gap: 8px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { background: var(--green-bg); color: var(--green); border: 1px solid #BBF7D0; }
+.toast.err { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+</style>
+<link rel="icon" type="image/png" href="/logoitu.png">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+  <img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+  </div>
+  <div class="sidebar-section">Principal</div>
+  <a href="/dashboard.html" class="sidebar-link"><span class="sidebar-icon">⊞</span> Dashboard</a>
+  <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
+  <div class="sidebar-section">Gestión</div>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar">A</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-nombre">—</div>
+        <div class="sidebar-user-role" id="sidebar-rol">—</div>
+      </div>
+      <button class="sidebar-logout" onclick="cerrarSesion()">↪</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/dashboard.html" class="topbar-back">← Volver</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">Registrar nuevo equipo</span>
+    </div>
+  </div>
+  <div class="content">
+    <div class="form-wrap">
+      <div class="id-preview">
+        <span class="id-preview-label">🔖 ID que se asignará al equipo:</span>
+        <span class="id-preview-value" id="id-preview">PC-LAB?-000</span>
+      </div>
+      <form id="form-agregar">
+        <div class="form-card">
+          <div class="form-card-header">
+            <span class="form-card-icon">📍</span>
+            <span class="form-card-title">Ubicación y asignación</span>
+            <span class="form-card-source sql">SQL Server</span>
+          </div>
+          <div class="form-card-body">
+            <div class="form-grid">
+              <div class="fg">
+                <label class="fl">Laboratorio <span>*</span></label>
+                <select class="fsel" id="lab" onchange="generarId()">
+                  <option value="">Seleccioná un laboratorio</option>
+                  <option value="SO">Laboratorio SO</option>
+                  <option value="1">Laboratorio 1</option>
+                  <option value="4">Laboratorio 4</option>
+                  <option value="5">Laboratorio 5</option>
+                </select>
+                <span class="field-error" id="err-lab">Seleccioná un laboratorio</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Banco / Mesa <span>*</span></label>
+                <input type="number" class="fi" id="banco" placeholder="Ej: 5" min="1" max="99" onchange="generarId()">
+                <span class="field-error" id="err-banco">Ingresá el número de banco</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Responsable técnico <span>*</span></label>
+                <input type="text" class="fi" id="responsable" placeholder="Ej: Vicino, Lucas">
+                <span class="field-error" id="err-responsable">Ingresá el nombre del responsable</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Fecha último mantenimiento</label>
+                <input type="date" class="fi" id="mantenimiento">
+                <span class="field-hint">Dejá vacío si es equipo nuevo</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Estado inicial <span>*</span></label>
+                <select class="fsel" id="estado">
+                  <option value="operativo">Operativo</option>
+                  <option value="mantenimiento">En mantenimiento</option>
+                  <option value="fuera de servicio">Fuera de servicio</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-header">
+            <span class="form-card-icon">⚙</span>
+            <span class="form-card-title">Hardware instalado</span>
+            <span class="form-card-source mongo">MongoDB</span>
+          </div>
+          <div class="form-card-body">
+            <div class="form-grid">
+              <div class="fg">
+                <label class="fl">Fabricante <span>*</span></label>
+                <input type="text" class="fi" id="fabricante" placeholder="Ej: Dell, HP, Lenovo">
+                <span class="field-error" id="err-fabricante">Ingresá el fabricante</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Modelo <span>*</span></label>
+                <input type="text" class="fi" id="modelo" placeholder="Ej: OptiPlex 7090">
+                <span class="field-error" id="err-modelo">Ingresá el modelo</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Tipo <span>*</span></label>
+                <select class="fsel" id="tipo">
+                  <option value="Desktop">Desktop</option>
+                  <option value="Laptop">Laptop</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="fl">Procesador (CPU) <span>*</span></label>
+                <input type="text" class="fi" id="cpu" placeholder="Ej: Intel Core i5-10500">
+                <span class="field-error" id="err-cpu">Ingresá el procesador</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Memoria RAM <span>*</span></label>
+                <input type="text" class="fi" id="ram" placeholder="Ej: 8 GB DDR4">
+                <span class="field-error" id="err-ram">Ingresá la memoria RAM</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Almacenamiento <span>*</span></label>
+                <input type="text" class="fi" id="disco" placeholder="Ej: 256 GB SSD">
+                <span class="field-error" id="err-disco">Ingresá el almacenamiento</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Sistema Operativo <span>*</span></label>
+                <input type="text" class="fi" id="so" placeholder="Ej: Ubuntu 22.04 LTS">
+                <span class="field-error" id="err-so">Ingresá el sistema operativo</span>
+              </div>
+              <div class="fg">
+                <label class="fl">Monitor</label>
+                <input type="text" class="fi" id="monitor" placeholder="Ej: Dell 22'' Full HD">
+              </div>
+              <div class="fg">
+                <label class="fl">Periféricos</label>
+                <input type="text" class="fi" id="perifericos" placeholder="Ej: Mouse + Teclado USB">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <a href="/dashboard.html" class="btn btn-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary" id="btn-guardar">＋ Registrar equipo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const usuario = JSON.parse(localStorage.getItem('usuario'))
+if (!usuario) window.location.href = '/login.html'
+document.getElementById('sidebar-nombre').textContent = usuario.nombre
+document.getElementById('sidebar-rol').textContent = usuario.rol
+document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
+
+function generarId() {
+  const lab = document.getElementById('lab').value
+  const banco = document.getElementById('banco').value
+  if (lab && banco) {
+    document.getElementById('id-preview').textContent = `PC-LAB${lab}-${String(banco).padStart(3,'0')}`
+  } else {
+    document.getElementById('id-preview').textContent = 'PC-LAB?-000'
+  }
+}
+
+function validar() {
+  const campos = [
+    { id: 'lab', err: 'err-lab' }, { id: 'banco', err: 'err-banco' },
+    { id: 'responsable', err: 'err-responsable' }, { id: 'fabricante', err: 'err-fabricante' },
+    { id: 'modelo', err: 'err-modelo' }, { id: 'cpu', err: 'err-cpu' },
+    { id: 'ram', err: 'err-ram' }, { id: 'disco', err: 'err-disco' },
+    { id: 'so', err: 'err-so' },
+  ]
+  let valido = true
+  campos.forEach(c => {
+    const el = document.getElementById(c.id)
+    const err = document.getElementById(c.err)
+    if (!el.value.trim()) { el.classList.add('error'); err.classList.add('visible'); valido = false }
+    else { el.classList.remove('error'); err.classList.remove('visible') }
+  })
+  return valido
+}
+
+document.getElementById('form-agregar').addEventListener('submit', async (e) => {
+  e.preventDefault()
+  if (!validar()) { showToast('⚠ Completá los campos obligatorios', 'err'); return }
+
+  const btn = document.getElementById('btn-guardar')
+  btn.textContent = 'Guardando...'; btn.disabled = true
+
+  const lab   = document.getElementById('lab').value
+  const banco = document.getElementById('banco').value
+  const id    = `PC-LAB${lab}-${String(banco).padStart(3,'0')}`
+  const labNombre = lab === 'SO' ? 'Laboratorio SO' : `Laboratorio ${lab}`
+
+  const equipo = {
+    id, lab: labNombre,
+    banco: String(banco).padStart(2,'0'),
+    responsable: document.getElementById('responsable').value,
+    mantenimiento: document.getElementById('mantenimiento').value || 'Sin registro',
+    estado: document.getElementById('estado').value,
+    fabricante: document.getElementById('fabricante').value,
+    modelo: document.getElementById('modelo').value,
+    tipo: document.getElementById('tipo').value,
+    cpu: document.getElementById('cpu').value,
+    ram: document.getElementById('ram').value,
+    disco: document.getElementById('disco').value,
+    so: document.getElementById('so').value,
+    monitor: document.getElementById('monitor').value || 'Sin monitor registrado',
+    perifericos: document.getElementById('perifericos').value || 'Sin periféricos registrados',
+  }
+
+  // await fetch('/api/equipos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(equipo) })
+  await new Promise(r => setTimeout(r, 800))
+
+  showToast(`✓ Equipo ${id} registrado correctamente`, 'ok')
+  const p = new URLSearchParams(equipo)
+  setTimeout(() => window.location.href = `/detalle.html?${p.toString()}`, 1500)
+
+  btn.textContent = '＋ Registrar equipo'; btn.disabled = false
+})
+
+function showToast(msg, tipo) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.className = 'toast ' + tipo + ' show'
+  setTimeout(() => t.className = 'toast ' + tipo, 3000)
+}
+</script>
+</body>
+</html>

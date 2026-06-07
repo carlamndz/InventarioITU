@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITU Inventario · Buscar PC</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5; --sidebar: #1B2A4A; --sidebar-hover: #243659; --sidebar-active: #2E4A7A;
+  --accent: #2563EB; --accent-light: #EFF6FF; --white: #FFFFFF;
+  --text: #1E293B; --text-muted: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+  --green: #16A34A; --green-bg: #DCFCE7; --red: #DC2626; --red-bg: #FEE2E2;
+  --yellow: #D97706; --yellow-bg: #FEF3C7; --blue-bg: #DBEAFE;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --ff: 'IBM Plex Sans', sans-serif; --fm: 'IBM Plex Mono', monospace;
+}
+body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+
+.sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.sidebar-section { padding: 16px 12px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); font-weight: 500; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; margin: 1px 8px; color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer; transition: all .2s; text-decoration: none; }
+.sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
+.sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
+.sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
+
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-back { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color .2s; }
+.topbar-back:hover { color: var(--accent); }
+.topbar-sep { color: var(--border); }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-sub-text { font-size: 11px; color: var(--text-muted); }
+
+.content { padding: 24px 28px; }
+
+.search-box { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.search-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+.search-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fl { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.fi, .fsel { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--ff); font-size: 13px; color: var(--text); background: white; outline: none; transition: border-color .2s; }
+.fi:focus, .fsel:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.fi::placeholder { color: var(--text-light); }
+.fsel { appearance: none; cursor: pointer; }
+.btn-buscar { padding: 9px 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: var(--ff); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s; white-space: nowrap; }
+.btn-buscar:hover { background: #1d4ed8; }
+
+.results-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.results-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.results-title { font-size: 13px; font-weight: 600; }
+.results-count { font-size: 12px; color: var(--text-muted); }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: #F8FAFC; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFBFC; }
+.pc-id { font-family: var(--fm); font-size: 12px; color: var(--accent); font-weight: 500; background: var(--accent-light); padding: 3px 8px; border-radius: 5px; display: inline-block; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.green { background: var(--green-bg); color: var(--green); }
+.badge.red { background: var(--red-bg); color: var(--red); }
+.badge.yellow { background: var(--yellow-bg); color: var(--yellow); }
+.btn-ver { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-family: var(--ff); font-size: 12px; color: var(--text); cursor: pointer; transition: all .2s; }
+.btn-ver:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+.empty { padding: 60px 20px; text-align: center; }
+.empty-icon { font-size: 40px; opacity: .2; margin-bottom: 12px; }
+.empty-title { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+.empty-desc { font-size: 12px; color: var(--text-light); }
+</style>
+<link rel="icon" type="image/png" href="/logoitu.png">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+<img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+  </div>
+  <div class="sidebar-section">Principal</div>
+  <a href="/dashboard.html" class="sidebar-link"><span class="sidebar-icon">⊞</span> Dashboard</a>
+  <a href="/buscar.html" class="sidebar-link active"><span class="sidebar-icon">🔍</span> Buscar PC</a>
+  <div class="sidebar-section">Gestión</div>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
+  <a href="/responsables.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
+  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar">A</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-nombre">—</div>
+        <div class="sidebar-user-role" id="sidebar-rol">—</div>
+      </div>
+    </div>
+    <button onclick="cerrarSesion()" style="width:100%;margin-top:8px;padding:8px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#FCA5A5;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(220,38,38,.25)'" onmouseout="this.style.background='rgba(220,38,38,.15)'">
+      ↪ Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/dashboard.html" class="topbar-back">← Volver</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">Buscar equipo</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="search-box">
+      <div class="search-title">🔍 Filtros de búsqueda</div>
+      <div class="search-row">
+        <div class="fg">
+          <label class="fl">ID o texto libre</label>
+          <input type="text" class="fi" id="q-texto" placeholder="Ej: PC-LAB1-001 o Dell">
+        </div>
+        <div class="fg">
+          <label class="fl">Laboratorio</label>
+          <select class="fsel" id="q-lab">
+            <option value="">Todos</option>
+            <option value="Laboratorio SO">Laboratorio SO</option>
+            <option value="Laboratorio 1">Laboratorio 1</option>
+            <option value="Laboratorio 4">Laboratorio 4</option>
+            <option value="Laboratorio 5">Laboratorio 5</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Estado</label>
+          <select class="fsel" id="q-estado">
+            <option value="">Todos</option>
+            <option value="operativo">Operativo</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="fuera de servicio">Fuera de servicio</option>
+          </select>
+        </div>
+        <button class="btn-buscar" onclick="buscar()">Buscar</button>
+      </div>
+    </div>
+
+    <div class="results-wrap">
+      <div class="results-header">
+        <span class="results-title">Resultados</span>
+        <span class="results-count" id="results-count">—</span>
+      </div>
+      <div id="results-body">
+        <div class="empty">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">Ingresá un criterio de búsqueda</div>
+          <div class="empty-desc">Usá los filtros de arriba para encontrar equipos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const usuario = JSON.parse(localStorage.getItem('usuario'))
+if (!usuario) window.location.href = '/login.html'
+document.getElementById('sidebar-nombre').textContent = usuario.nombre
+document.getElementById('sidebar-rol').textContent = usuario.rol
+document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
+
+const equipos = [
+  { id:'PC-LAB1-001', lab:'Laboratorio 1', banco:'01', responsable:'Vicino, Lucas', mantenimiento:'15/03/2025', estado:'operativo', fabricante:'Dell', modelo:'OptiPlex 7090', cpu:'Intel i5-10500', ram:'8 GB DDR4', disco:'256 GB SSD', so:'Ubuntu 22.04', monitor:'Dell 22"', perifericos:'Mouse + Teclado', tipo:'Desktop' },
+  { id:'PC-LAB1-002', lab:'Laboratorio 1', banco:'02', responsable:'Rojas, Augusto', mantenimiento:'15/03/2025', estado:'mantenimiento', fabricante:'HP', modelo:'ProDesk 400', cpu:'Intel i5-9500', ram:'8 GB DDR4', disco:'512 GB SSD', so:'Windows 10', monitor:'HP 21"', perifericos:'Mouse + Teclado', tipo:'Desktop' },
+  { id:'PC-LABSO-005', lab:'Laboratorio SO', banco:'05', responsable:'Olaiz, Bruno', mantenimiento:'20/02/2025', estado:'operativo', fabricante:'Lenovo', modelo:'ThinkCentre M75', cpu:'AMD Ryzen 5', ram:'16 GB DDR4', disco:'512 GB SSD', so:'Ubuntu 22.04', monitor:'Lenovo 24"', perifericos:'Mouse + Teclado', tipo:'Desktop' },
+  { id:'PC-LAB4-012', lab:'Laboratorio 4', banco:'12', responsable:'Perez, Nicolas', mantenimiento:'10/01/2025', estado:'fuera de servicio', fabricante:'Dell', modelo:'OptiPlex 5090', cpu:'Intel i3-10100', ram:'4 GB DDR4', disco:'1 TB HDD', so:'Windows 11', monitor:'Dell 19"', perifericos:'Mouse + Teclado', tipo:'Desktop' },
+  { id:'PC-LABSO-009', lab:'Laboratorio SO', banco:'09', responsable:'Melocchi, Sol', mantenimiento:'01/04/2025', estado:'operativo', fabricante:'HP', modelo:'EliteDesk 800', cpu:'Intel i7-10700', ram:'16 GB DDR4', disco:'256 GB SSD', so:'Ubuntu 20.04', monitor:'HP 24"', perifericos:'Mouse + Teclado', tipo:'Desktop' },
+  { id:'PC-LAB5-003', lab:'Laboratorio 5', banco:'03', responsable:'Rojas, Augusto', mantenimiento:'28/03/2025', estado:'mantenimiento', fabricante:'Lenovo', modelo:'IdeaCentre 5', cpu:'AMD Ryzen 3', ram:'8 GB DDR4', disco:'256 GB SSD', so:'Windows 11', monitor:'Lenovo 22"', perifericos:'Mouse + Teclado', tipo:'Desktop' },
+]
+
+function badgeEstado(e) {
+  const map = { 'operativo':'green','mantenimiento':'yellow','fuera de servicio':'red' }
+  return `<span class="badge ${map[e]||'blue'}">${e.charAt(0).toUpperCase()+e.slice(1)}</span>`
+}
+
+function buscar() {
+  const texto  = document.getElementById('q-texto').value.toLowerCase().trim()
+  const lab    = document.getElementById('q-lab').value
+  const estado = document.getElementById('q-estado').value
+
+  const resultados = equipos.filter(e => {
+    const matchTexto = !texto || e.id.toLowerCase().includes(texto) || e.responsable.toLowerCase().includes(texto) || e.fabricante.toLowerCase().includes(texto) || e.modelo.toLowerCase().includes(texto)
+    const matchLab   = !lab    || e.lab === lab
+    const matchEst   = !estado || e.estado === estado
+    return matchTexto && matchLab && matchEst
+  })
+
+  document.getElementById('results-count').textContent = `${resultados.length} equipo(s) encontrado(s)`
+
+  if (resultados.length === 0) {
+    document.getElementById('results-body').innerHTML = `<div class="empty"><div class="empty-icon">😕</div><div class="empty-title">Sin resultados</div><div class="empty-desc">No se encontraron equipos con esos criterios</div></div>`
+    return
+  }
+
+  document.getElementById('results-body').innerHTML = `
+    <table>
+      <thead><tr><th>ID Equipo</th><th>Laboratorio</th><th>Banco</th><th>Responsable</th><th>Últ. mantenimiento</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>
+        ${resultados.map(e => `
+          <tr>
+            <td><span class="pc-id">${e.id}</span></td>
+            <td>${e.lab}</td><td>Banco ${e.banco}</td><td>${e.responsable}</td><td>${e.mantenimiento}</td>
+            <td>${badgeEstado(e.estado)}</td>
+            <td><button class="btn-ver" onclick="verDetalle('${encodeURIComponent(JSON.stringify(e))}')">Ver detalle</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`
+}
+
+function verDetalle(eJson) {
+  const e = JSON.parse(decodeURIComponent(eJson))
+  const p = new URLSearchParams(e)
+  window.location.href = `/detalle.html?${p.toString()}`
+}
+
+const params = new URLSearchParams(window.location.search)
+const q = params.get('q')
+if (q) { document.getElementById('q-texto').value = q; buscar() }
+</script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/logoitu.png">
+<title>ITU Inventario · Iniciar sesión</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5;
+  --white: #FFFFFF;
+  --text: #1E293B;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --border: #E2E8F0;
+  --accent: #2563EB;
+  --accent-dark: #1d4ed8;
+  --accent-light: #EFF6FF;
+  --green: #16A34A;
+  --red: #DC2626;
+  --red-bg: #FEE2E2;
+  --sidebar: #1B2A4A;
+  --ff: 'IBM Plex Sans', sans-serif;
+  --fm: 'IBM Plex Mono', monospace;
+}
+body {
+  font-family: var(--ff); background: var(--bg);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+}
+ 
+.login-wrap {
+  display: grid; grid-template-columns: 1fr 1fr;
+  width: 900px; min-height: 520px;
+  background: var(--white); border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  overflow: hidden;
+}
+ 
+/* LADO IZQUIERDO */
+.login-left {
+  background: var(--sidebar);
+  padding: 48px 40px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+.login-left::before {
+  content: '';
+  position: absolute; top: -100px; right: -100px;
+  width: 300px; height: 300px;
+  background: rgba(37,99,235,.2);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.login-left::after {
+  content: '';
+  position: absolute; bottom: -80px; left: -60px;
+  width: 220px; height: 220px;
+  background: rgba(37,99,235,.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.login-logo { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+.login-logo-icon {
+  width: 42px; height: 42px; background: var(--accent);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: white; letter-spacing: .05em;
+}
+.login-logo-text { display: flex; flex-direction: column; }
+.login-logo-name { font-size: 17px; font-weight: 700; color: white; letter-spacing: .02em; }
+.login-logo-sub { font-size: 11px; color: rgba(255,255,255,.4); letter-spacing: .06em; text-transform: uppercase; }
+ 
+.login-left-content { position: relative; z-index: 1; }
+.login-left-title {
+  font-size: 26px; font-weight: 700; color: white;
+  line-height: 1.2; margin-bottom: 12px;
+}
+.login-left-desc { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.7; margin-bottom: 28px; }
+ 
+.login-stats { display: flex; flex-direction: column; gap: 10px; }
+.login-stat {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.06); border-radius: 10px;
+  padding: 10px 14px; border: 1px solid rgba(255,255,255,.08);
+}
+.login-stat-icon { font-size: 18px; }
+.login-stat-text { font-size: 12px; color: rgba(255,255,255,.6); }
+.login-stat-text b { color: white; font-weight: 600; }
+ 
+/* LADO DERECHO */
+.login-right {
+  padding: 48px 44px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.login-right-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.login-right-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+.login-right-sub span { color: var(--accent); font-weight: 500; }
+ 
+.fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+.fl { font-size: 12px; font-weight: 500; color: var(--text); letter-spacing: .02em; }
+.fi-wrap { position: relative; }
+.fi {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: var(--ff); font-size: 14px; color: var(--text);
+  background: white; outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.fi:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.fi::placeholder { color: var(--text-light); }
+.fi-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--text-light); }
+ 
+.login-hint {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--accent-light); border: 1px solid #BFDBFE;
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 20px;
+}
+.login-hint-icon { font-size: 14px; flex-shrink: 0; }
+.login-hint-text { font-size: 12px; color: #1e40af; line-height: 1.4; }
+ 
+.btn-login {
+  width: 100%; padding: 12px;
+  background: var(--accent); color: white;
+  border: none; border-radius: 8px;
+  font-family: var(--ff); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .2s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-login:hover { background: var(--accent-dark); }
+.btn-login:active { transform: scale(.99); }
+.btn-login:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+ 
+.msg {
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 12px; text-align: center; margin-top: 12px; display: none;
+  font-weight: 500;
+}
+.msg.err { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; display: block; }
+.msg.ok { background: #DCFCE7; color: var(--green); border: 1px solid #BBF7D0; display: block; }
+ 
+.login-footer {
+  text-align: center; margin-top: 20px;
+  font-size: 11px; color: var(--text-light);
+}
+.login-footer b { color: var(--text-muted); font-weight: 500; }
+</style>
+</head>
+<body>
+ 
+<div class="login-wrap">
+ 
+  <!-- IZQUIERDA -->
+  <div class="login-left">
+  <div class="login-logo">
+    <img src="/logoitu.png" alt="ITU" style="width:160px;opacity:.9">
+  </div>
+
+  <div class="login-left-content">
+    <h2 class="login-left-title">Gestión de equipos informáticos</h2>
+    <p class="login-left-desc">Accedé al inventario centralizado de los laboratorios de informática del ITU Mendoza.</p>
+  </div>
+
+  <div style="font-size:11px;color:rgba(255,255,255,.2);position:relative;z-index:1">
+    © 2026 ITU Mendoza · Proyecto Integrador EGI
+  </div>
+</div>
+ 
+  <!-- DERECHA -->
+  <div class="login-right">
+    <h1 class="login-right-title">Iniciar sesión</h1>
+    <p class="login-right-sub">Usá tus credenciales institucionales de <span>Active Directory</span> para acceder.</p>
+ 
+    <form id="form-login">
+      <div class="fg">
+        <label class="fl">Usuario institucional</label>
+        <div class="fi-wrap">
+          <input type="text" class="fi" id="usuario" placeholder="ej: mgarcia" required autocomplete="username">
+          <span class="fi-icon">👤</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Contraseña</label>
+        <div class="fi-wrap">
+          <input type="password" class="fi" id="password" placeholder="Tu contraseña de red" required autocomplete="current-password">
+          <span class="fi-icon">🔒</span>
+        </div>
+      </div>
+ 
+      <div class="login-hint">
+        <span class="login-hint-icon">ℹ️</span>
+        <span class="login-hint-text">Usá el mismo usuario y contraseña que usás para entrar a las PCs del laboratorio.</span>
+      </div>
+ 
+      <button type="submit" class="btn-login" id="btn-login">
+        Ingresar al sistema →
+      </button>
+ 
+      <div class="msg" id="msg"></div>
+    </form>
+ 
+    <div class="login-footer">
+      Acceso restringido · Solo personal autorizado del <b>ITU Mendoza</b>
+    </div>
+  </div>
+ 
+</div>
+ 
+<script>
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault()
+ 
+  const usuario  = document.getElementById('usuario').value
+  const password = document.getElementById('password').value
+  const msg      = document.getElementById('msg')
+  const btn      = document.getElementById('btn-login')
+ 
+  btn.textContent = 'Verificando...'
+  btn.disabled = true
+  msg.className = 'msg'
+ 
+  try {
+    const res  = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario, password })
+    })
+    const data = await res.json()
+ 
+    if (data.error) {
+      msg.textContent = '⚠ ' + data.error
+      msg.className = 'msg err'
+    } else {
+      localStorage.setItem('usuario', JSON.stringify(data.usuario))
+      msg.textContent = '✓ Acceso concedido. Redirigiendo...'
+      msg.className = 'msg ok'
+      setTimeout(() => window.location.href = '/dashboard.html', 1200)
+    }
+  } catch {
+    msg.textContent = '⚠ Error de conexión con el servidor.'
+    msg.className = 'msg err'
+  }
+ 
+  btn.textContent = 'Ingresar al sistema →'
+  btn.disabled = false
+})
+</script>
+ 
+</body>
+</html>
+ 

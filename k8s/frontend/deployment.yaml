@@ -18,6 +18,7 @@ spec:
       containers:
         - name: frontend
           image: carlamndz/inventario-web:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 3000
           env:
