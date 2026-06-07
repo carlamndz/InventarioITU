@@ -15,6 +15,7 @@ spec:
       labels:
         app: ldap
     spec:
+      hostname: ldap
       containers:
         - name: ldap
           image: osixia/openldap:1.5.0
@@ -29,6 +30,10 @@ spec:
               value: "ITU_egi2026!"
             - name: LDAP_CONFIG_PASSWORD
               value: "ITU_egi2026!"
+            - name: LDAP_OPENLDAP_UID
+              value: "0"
+            - name: LDAP_OPENLDAP_GID
+              value: "0"
           resources:
             requests:
               memory: "128Mi"
