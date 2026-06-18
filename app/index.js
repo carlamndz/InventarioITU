@@ -5,20 +5,20 @@ const app = express()
 const mongoose = require('mongoose')
 
 mongoose.connect('mongodb://localhost:27017/inventario_hardware')
-    .then(() => console.log('Conectado a MongoDB ✅'))
-    .catch(err => console.log('Error MongoDB:', err))
+  .then(() => console.log('Conectado a MongoDB ✅'))
+  .catch(err => console.log('Error MongoDB:', err))
 
 const Hardware = mongoose.model('Hardware', new mongoose.Schema({
-    id: String,
-    fabricante: String,
-    modelo: String,
-    tipo: String,
-    cpu: { fabricante: String, modelo: String, frecuencia: String },
-    ram: { capacidad_gb: Number, tipo: String },
-    disco: { capacidad_gb: Number, tipo: String },
-    sistema_operativo: { nombre: String, version: String },
-    monitor: { fabricante: String, tamanio: String, resolucion: String },
-    perifericos: { detalle: String }
+  id: String,
+  fabricante: String,
+  modelo: String,
+  tipo: String,
+  cpu: { fabricante: String, modelo: String, frecuencia: String },
+  ram: { capacidad_gb: Number, tipo: String },
+  disco: { capacidad_gb: Number, tipo: String },
+  sistema_operativo: { nombre: String, version: String },
+  monitor: { fabricante: String, tamanio: String, resolucion: String },
+  perifericos: { detalle: String }
 }, { collection: 'hardware' }))
 
 app.use(express.json())
@@ -29,7 +29,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: '',
+    password: '1234',
     database: 'inventario_egi'
 })
 
@@ -118,12 +118,12 @@ app.delete('/api/equipos/:id', async (req, res) => {
     try {
         // Borra de MySQL
         await db.promise().query('DELETE FROM equipos WHERE id_equipo = ?', [req.params.id])
-
+        
         // Borra de MongoDB también
         await Hardware.deleteMany({ id: req.params.id })
-
+        
         res.json({ mensaje: 'Equipo eliminado ✅' })
-    } catch (err) {
+    } catch(err) {
         res.json({ error: err.message })
     }
 })
@@ -150,9 +150,9 @@ app.post('/api/responsables', (req, res) => {
     const { nombre, apellido, dni, rol } = req.body
     db.query('INSERT INTO responsables (nombre, apellido, dni, rol) VALUES (?, ?, ?, ?)',
         [nombre, apellido, dni, rol], (err, result) => {
-            if (err) return res.json({ error: err.message })
-            res.json({ mensaje: 'Responsable agregado ✅', id: result.insertId })
-        })
+        if (err) return res.json({ error: err.message })
+        res.json({ mensaje: 'Responsable agregado ✅', id: result.insertId })
+    })
 })
 
 // PUT editar
@@ -160,9 +160,9 @@ app.put('/api/responsables/:id', (req, res) => {
     const { nombre, apellido, dni, rol } = req.body
     db.query('UPDATE responsables SET nombre=?, apellido=?, dni=?, rol=? WHERE id_responsable=?',
         [nombre, apellido, dni, rol, req.params.id], (err) => {
-            if (err) return res.json({ error: err.message })
-            res.json({ mensaje: 'Responsable actualizado ✅' })
-        })
+        if (err) return res.json({ error: err.message })
+        res.json({ mensaje: 'Responsable actualizado ✅' })
+    })
 })
 
 // DELETE eliminar
@@ -201,36 +201,36 @@ app.get('/api/stats', (req, res) => {
 })
 
 app.get('/api/hardware/:id', async (req, res) => {
-    try {
-        const hw = await Hardware.findOne({ id: req.params.id })
-        if (!hw) return res.json({ error: 'Hardware no encontrado' })
-        res.json({
-            fabricante: hw.fabricante,
-            modelo: hw.modelo,
-            tipo: hw.tipo,
-            cpu: `${hw.cpu.fabricante} ${hw.cpu.modelo}${hw.cpu.frecuencia ? ' @ ' + hw.cpu.frecuencia : ''}`,
-            ram: `${hw.ram.capacidad_gb} GB ${hw.ram.tipo}`,
-            disco: `${hw.disco.capacidad_gb} GB ${hw.disco.tipo}`,
-            so: `${hw.sistema_operativo.nombre} ${hw.sistema_operativo.version}`,
-            monitor: `${hw.monitor.fabricante} ${hw.monitor.tamanio}`,
-            perifericos: hw.perifericos.detalle
-        })
-    } catch (err) {
-        res.json({ error: err.message })
-    }
+  try {
+    const hw = await Hardware.findOne({ id: req.params.id })
+    if (!hw) return res.json({ error: 'Hardware no encontrado' })
+    res.json({
+      fabricante: hw.fabricante,
+      modelo: hw.modelo,
+      tipo: hw.tipo,
+      cpu: `${hw.cpu.fabricante} ${hw.cpu.modelo}${hw.cpu.frecuencia ? ' @ '+hw.cpu.frecuencia : ''}`,
+      ram: `${hw.ram.capacidad_gb} GB ${hw.ram.tipo}`,
+      disco: `${hw.disco.capacidad_gb} GB ${hw.disco.tipo}`,
+      so: `${hw.sistema_operativo.nombre} ${hw.sistema_operativo.version}`,
+      monitor: `${hw.monitor.fabricante} ${hw.monitor.tamanio}`,
+      perifericos: hw.perifericos.detalle
+    })
+  } catch(err) {
+    res.json({ error: err.message })
+  }
 })
 
 app.post('/api/hardware', async (req, res) => {
-    try {
-        await Hardware.findOneAndUpdate(
-            { id: req.body.id },        // busca por ID
-            { $set: req.body },          // actualiza con los nuevos datos
-            { upsert: true, new: true }  // si no existe, lo crea
-        )
-        res.json({ mensaje: 'Hardware guardado ✅' })
-    } catch (err) {
-        res.json({ error: err.message })
-    }
+  try {
+    await Hardware.findOneAndUpdate(
+      { id: req.body.id },        // busca por ID
+      { $set: req.body },          // actualiza con los nuevos datos
+      { upsert: true, new: true }  // si no existe, lo crea
+    )
+    res.json({ mensaje: 'Hardware guardado ✅' })
+  } catch(err) {
+    res.json({ error: err.message })
+  }
 })
 
 app.listen(3000, () => {
