@@ -8,7 +8,7 @@ const app = express()
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
-const LDAP_URL = process.env.LDAP_URL || 'ldap://192.168.1.10:389'
+const LDAP_URL = process.env.LDAP_URL || 'ldap://ldap-service-external:389'
 
 const MONGO_HOST = process.env.MONGO_HOST || 'localhost' 
 const MYSQL_HOST = process.env.MYSQL_HOST || 'localhost'
