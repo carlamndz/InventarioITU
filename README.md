@@ -51,8 +51,18 @@ La aplicación sigue una arquitectura de 3 capas:
 2. **Lógica de negocio** — servidor Express (`index.js`) que expone los endpoints REST y orquesta las consultas a ambas bases de datos.
 3. **Datos** — MySQL para datos relacionales (equipos, laboratorios, responsables, actividad) y MongoDB para los documentos de hardware.
 Las dos bases de datos se vinculan mediante un identificador compartido: el **ID de equipo** (ej. `PC-LAB1-001`) es la primary key en MySQL y el campo `id` en los documentos de MongoDB. No existe una clave foránea real entre motores distintos, por lo que la app resuelve esta relación a nivel de aplicación, haciendo dos consultas independientes con el mismo ID y combinando los resultados.
- 
-Ver el diagrama de arquitectura completo en `docs/flujograma-arquitectura.mermaid`.
+
+<p align="center">
+  <img width="500" alt="DIAGRAMA DE ARQ" src="https://github.com/user-attachments/assets/884d7562-7b2e-4197-a807-ac846fbfdc67" />
+</p>
+
+
+## Flujo: registrar un equipo nuevo
+
+<p align="center">
+  <img width="500" alt="DIAGRAMA DE USO" src="https://github.com/user-attachments/assets/5bf41982-f42e-48f4-8b64-6770ab32c799" />
+</p>
+
  
 ## Estructura de carpetas
  
