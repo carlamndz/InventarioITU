@@ -62,7 +62,7 @@ app/
 ├── package.json
 ├── Dockerfile             # Empaquetado para Kubernetes
 └── public/
-    ├── login.html          # Login (simulado, preparado para integrar con LDAP)
+    ├── login.html          # Login
     ├── dashboard.html       # Vista general + estadísticas
     ├── buscar.html          # Búsqueda y filtros de equipos
     ├── detalle.html          # Detalle de un equipo (MySQL + MongoDB)
