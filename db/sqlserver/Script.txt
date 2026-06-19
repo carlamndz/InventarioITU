@@ -1,0 +1,145 @@
+CREATE DATABASE IF NOT EXISTS inventario_egi;
+
+USE inventario_egi;
+
+CREATE TABLE laboratorios (
+    id_laboratorio INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    capacidad_equipos INT NOT NULL,
+    ubicacion VARCHAR(100),
+    descripcion TEXT
+);
+
+CREATE TABLE responsables (
+    id_responsable INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    dni VARCHAR(15) NOT NULL UNIQUE,
+    rol ENUM('administrador', 'usuario') NOT NULL
+);
+
+CREATE TABLE equipos (
+    id_equipo VARCHAR(20) PRIMARY KEY,
+    id_laboratorio INT NOT NULL,
+    banco VARCHAR(5) NOT NULL,
+    id_responsable INT,
+    ultimo_mantenimiento DATE,
+    estado ENUM('operativo', 'mantenimiento', 'fuera de servicio') NOT NULL DEFAULT 'operativo',
+    fecha_alta DATE NOT NULL DEFAULT (CURRENT_DATE),	
+
+    CONSTRAINT fk_equipos_laboratorios
+        FOREIGN KEY (id_laboratorio)
+        REFERENCES laboratorios(id_laboratorio),
+
+    CONSTRAINT fk_equipos_responsables
+        FOREIGN KEY (id_responsable)
+        REFERENCES responsables(id_responsable)
+);
+
+CREATE TABLE mantenimientos (
+    id_mantenimiento INT AUTO_INCREMENT PRIMARY KEY,
+    id_equipo VARCHAR(20) NOT NULL,
+    fecha_mantenimiento DATE NOT NULL,
+    tipo_mantenimiento ENUM('preventivo', 'correctivo', 'actualizacion', 'limpieza') NOT NULL,
+    descripcion TEXT NOT NULL,
+    estado ENUM('pendiente', 'realizado', 'cancelado') NOT NULL DEFAULT 'pendiente',
+
+    CONSTRAINT fk_mantenimientos_equipos
+        FOREIGN KEY (id_equipo)
+        REFERENCES equipos(id_equipo)
+);
+
+CREATE TABLE actividad_reciente (
+    id_actividad INT AUTO_INCREMENT PRIMARY KEY,
+    id_equipo VARCHAR(20) NOT NULL,
+    tipo_actividad ENUM('registro', 'actualizacion', 'mantenimiento', 'cambio_estado') NOT NULL,
+    descripcion VARCHAR(255) NOT NULL,
+    fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_actividad_equipos
+        FOREIGN KEY (id_equipo)
+        REFERENCES equipos(id_equipo)
+);
+
+
+INSERT INTO laboratorios (nombre, capacidad_equipos, ubicacion, descripcion) VALUES
+('Laboratorio 1', 28, 'Sector principal', 'Laboratorio de informática general'),
+('Laboratorio SO', 32, 'Sector sistemas operativos', 'Laboratorio orientado a sistemas operativos'),
+('Laboratorio 4', 24, 'Primer piso', 'Laboratorio de prácticas'),
+('Laboratorio 5', 36, 'Segundo piso', 'Laboratorio de programación');
+
+INSERT INTO responsables (nombre, apellido, dni, rol) VALUES
+('Lucas', 'Vicino', '40123456', 'administrador'),
+('Augusto', 'Rojas', '41234567', 'administrador'),
+('Bruno', 'Olaiz', '42345678', 'usuario'),
+('Sol', 'Melocchi', '43456789', 'usuario'),
+('Nicolas', 'Perez', '44567890', 'usuario');
+
+INSERT INTO equipos (id_equipo, id_laboratorio, banco, id_responsable, ultimo_mantenimiento, estado) VALUES
+('PC-LAB1-001', 1, '01', 1, '2025-03-15', 'operativo'),
+('PC-LABSO-002', 2, '02', 2, '2025-03-15', 'mantenimiento'),
+('PC-LABSO-005', 2, '05', 3, '2025-02-20', 'operativo'),
+('PC-LAB4-012', 3, '12', 5, '2025-01-10', 'fuera de servicio'),
+('PC-LABSO-009', 2, '09', 4, '2025-04-01', 'operativo'),
+('PC-LAB5-003', 4, '03', 2, '2025-03-28', 'mantenimiento');
+
+INSERT INTO mantenimientos 
+(id_equipo, fecha_mantenimiento, tipo_mantenimiento, descripcion, estado) VALUES
+('PC-LAB1-001', '2025-03-15', 'preventivo', 'Limpieza general y revisión del sistema', 'realizado'),
+('PC-LABSO-002', '2025-03-15', 'correctivo', 'Equipo enviado a mantenimiento por fallas de rendimiento', 'pendiente'),
+('PC-LAB4-012', '2025-01-10', 'correctivo', 'Disco dañado. Equipo fuera de servicio', 'pendiente'),
+('PC-LABSO-009', '2025-04-01', 'actualizacion', 'Actualización de sistema operativo', 'realizado'),
+('PC-LAB5-003', '2025-03-28', 'correctivo', 'Revisión por posible falla de RAM', 'pendiente');
+
+INSERT INTO actividad_reciente 
+(id_equipo, tipo_actividad, descripcion) VALUES
+('PC-LAB1-001', 'cambio_estado', 'PC-LAB1-001 marcada como operativa'),
+('PC-LABSO-002', 'mantenimiento', 'PC-LABSO-002 enviada a mantenimiento'),
+('PC-LABSO-005', 'registro', 'PC-LABSO-005 registrada como nuevo equipo'),
+('PC-LAB4-012', 'cambio_estado', 'PC-LAB4-012 marcada fuera de servicio por disco dañado'),
+('PC-LABSO-009', 'actualizacion', 'PC-LABSO-009 actualizada con nuevo sistema operativo');
+
+-- Consulta con resultado a algo muy parecido que se ve en el dashboard --
+SELECT 
+    e.id_equipo AS id,
+    l.nombre AS laboratorio,
+    e.banco,
+    CONCAT(r.apellido, ', ', r.nombre) AS responsable,
+    e.ultimo_mantenimiento,
+    e.estado
+FROM equipos e
+INNER JOIN laboratorios l 
+    ON e.id_laboratorio = l.id_laboratorio
+LEFT JOIN responsables r 
+    ON e.id_responsable = r.id_responsable;
+    
+    -- Total de equipos --
+    SELECT COUNT(*) AS total_equipos
+FROM equipos;
+
+	-- Equipos por estado --
+    SELECT estado, COUNT(*) AS cantidad
+FROM equipos
+GROUP BY estado;
+
+	-- Ocupación por laboratorios --
+    SELECT 
+    l.nombre AS laboratorio,
+    COUNT(e.id_equipo) AS equipos_registrados,
+    l.capacidad_equipos
+FROM laboratorios l
+LEFT JOIN equipos e 
+    ON l.id_laboratorio = e.id_laboratorio
+GROUP BY l.id_laboratorio, l.nombre, l.capacidad_equipos;
+
+	-- Responsables con cantidad de equipos asignados --
+    SELECT 
+    r.id_responsable,
+    CONCAT(r.apellido, ', ', r.nombre) AS responsable,
+    r.dni,
+    r.rol,
+    COUNT(e.id_equipo) AS equipos_asignados
+FROM responsables r
+LEFT JOIN equipos e 
+    ON r.id_responsable = e.id_responsable
+GROUP BY r.id_responsable, r.nombre, r.apellido, r.dni, r.rol;
