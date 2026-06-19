@@ -52,7 +52,6 @@ La aplicación sigue una arquitectura de 3 capas:
 3. **Datos** — MySQL para datos relacionales (equipos, laboratorios, responsables, actividad) y MongoDB para los documentos de hardware.
 Las dos bases de datos se vinculan mediante un identificador compartido: el **ID de equipo** (ej. `PC-LAB1-001`) es la primary key en MySQL y el campo `id` en los documentos de MongoDB. No existe una clave foránea real entre motores distintos, por lo que la app resuelve esta relación a nivel de aplicación, haciendo dos consultas independientes con el mismo ID y combinando los resultados.
 
- **Arquitectura del sistema** 
 <p align="center">
   <img width="500" alt="DIAGRAMA DE ARQ" src="https://github.com/user-attachments/assets/884d7562-7b2e-4197-a807-ac846fbfdc67" />
 </p>
