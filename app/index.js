@@ -1,10 +1,20 @@
 const express = require('express')
+const path = require('path')
+const LdapAuthentication = require('ldap-authentication')
 const mysql = require('mysql2')
+const mongoose = require('mongoose')
 const app = express()
 
-const mongoose = require('mongoose')
+app.use(express.json())
+app.use(express.static(path.join(__dirname, 'public')))
 
-mongoose.connect('mongodb://localhost:27017/inventario_hardware')
+const LDAP_URL = process.env.LDAP_URL || 'ldap://192.168.1.10:389'
+
+const MONGO_HOST = process.env.MONGO_HOST || 'localhost' 
+const MYSQL_HOST = process.env.MYSQL_HOST || 'localhost'
+
+// CONEXIÓN MONGODB
+mongoose.connect(`mongodb://${MONGO_HOST}:27017/inventario_hardware`)
     .then(() => console.log('Conectado a MongoDB ✅'))
     .catch(err => console.log('Error MongoDB:', err))
 
@@ -21,9 +31,6 @@ const Hardware = mongoose.model('Hardware', new mongoose.Schema({
     perifericos: { detalle: String }
 }, { collection: 'hardware' }))
 
-app.use(express.json())
-app.use(express.static('public'))
-
 // Redirección de la raíz al login
 app.get('/', (req, res) => {
     res.redirect('/login.html')
@@ -31,7 +38,7 @@ app.get('/', (req, res) => {
 
 // CONEXIÓN MYSQL
 const db = mysql.createConnection({
-    host: 'localhost',
+    host: MYSQL_HOST,
     port: 3306,
     user: 'root',
     password: '',
@@ -46,22 +53,57 @@ db.connect((err) => {
     console.log('Conectado a MySQL ✅')
 })
 
-// LOGIN
-app.post('/login', (req, res) => {
+// ── LOGIN INTEGRADO ROBUSTO (CORREGIDO DE RAÍZ) ───────────────────────
+app.post('/login', async (req, res) => {
     const { usuario, password } = req.body
+
+    if (!usuario || !password) {
+        return res.status(400).json({ error: 'Usuario y contraseña requeridos' })
+    }
+
+    // 1. VALIDACIÓN COMODÍN (LOCAL)
     if (usuario === 'admin' && password === '1234') {
-        res.json({
+        console.log('[LOGIN] Acceso exitoso mediante credenciales comodín.')
+        return res.json({
             usuario: {
                 nombre: 'Administrador ITU',
                 usuario: 'admin',
                 rol: 'administrador'
             }
         })
-    } else {
-        res.json({ error: 'Usuario o contraseña incorrectos' })
+    }
+
+    // 2. VALIDACIÓN CONTRA ACTIVE DIRECTORY PLANA (EVITA EL BUG INTERNAL TOSTRING)
+    let options = {
+        ldapOpts: { url: LDAP_URL },
+        userDn: usuario, // Se envía el UPN directo (ej: tecnico01@itu.local)
+        userPassword: password
+    }
+
+    try {
+        // Autenticación por Bind puro. Si la clave es incorrecta va al catch.
+        await LdapAuthentication.authenticate(options)
+        
+        console.log(`[AD] Usuario ${usuario} autenticado correctamente.`);
+
+        // Formateamos un nombre estético basado en su propio UPN de forma segura
+        // Ej: "juan.perez@itu.local" -> "JUAN.PEREZ"
+        // Ej: "tecnico01@itu.local" -> "TECNICO01"
+        const nombreMostrar = usuario.split('@')[0].toUpperCase();
+
+        return res.json({
+            usuario: {
+                nombre: nombreMostrar, // 🎯 Nombre limpio garantizado sin romper la librería
+                usuario: usuario,
+                rol: 'usuario_autenticado_ad'
+            }
+        })
+
+    } catch (error) {
+        console.error(`[AD] Fallo de autenticación para el usuario ${usuario}:`, error.message || error)
+        return res.status(401).json({ error: 'Usuario o contraseña incorrectos (AD/Local)' })
     }
 })
-
 // ── EQUIPOS ──────────────────────────────────────────
 
 // GET todos los equipos
@@ -238,6 +280,7 @@ app.post('/api/hardware', async (req, res) => {
     }
 })
 
-app.listen(3000, () => {
+// Escuchar en 0.0.0.0 es indispensable para ambientes contenerizados
+app.listen(3000, '0.0.0.0', () => {
     console.log('Inventario ITU corriendo en http://localhost:3000')
 })

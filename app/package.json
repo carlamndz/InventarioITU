@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
+    "ldap-authentication": "^4.0.4",
     "mongoose": "^9.6.3",
     "mysql2": "^3.22.4"
   }
