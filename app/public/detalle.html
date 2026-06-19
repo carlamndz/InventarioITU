@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ITU Inventario · Detalle de equipo</title>
+<link rel="icon" type="image/png" href="/logoitu.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,14 +25,11 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
 .sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
 .sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
 .sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
-.sidebar-badge { margin-left: auto; background: var(--accent); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
 .sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
 .sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
 .sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
 .sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
 .sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
-.sidebar-logout { margin-left: auto; font-size: 13px; color: rgba(255,255,255,.3); cursor: pointer; background: none; border: none; transition: color .2s; }
-.sidebar-logout:hover { color: rgba(255,255,255,.8); }
 .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
 .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
@@ -94,25 +92,25 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
 .confirm-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 8px; }
 .confirm-desc { font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.6; }
 .confirm-pc { font-family: var(--fm); color: var(--red); font-weight: 600; }
-.toast { position: fixed; bottom: 24px; right: 24px; z-index: 2000; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.15); transform: translateY(80px); opacity: 0; transition: all .3s; display: flex; align-items: center; gap: 8px; }
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 2000; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.15); transform: translateY(80px); opacity: 0; transition: all .3s; }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.ok { background: var(--green-bg); color: var(--green); border: 1px solid #BBF7D0; }
 .toast.err { background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+.loading { color: var(--text-muted); font-size: 12px; font-style: italic; }
 </style>
-<link rel="icon" type="image/png" href="/logoitu.png">
 </head>
 <body>
 
 <aside class="sidebar">
   <div class="sidebar-logo">
-<img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+    <img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
   </div>
   <div class="sidebar-section">Principal</div>
   <a href="/dashboard.html" class="sidebar-link"><span class="sidebar-icon">⊞</span> Dashboard</a>
   <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
   <div class="sidebar-section">Gestión</div>
   <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
-  <a href="#" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
+  <a href="/responsables.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
   <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
   <div class="sidebar-footer">
     <div class="sidebar-user">
@@ -121,8 +119,10 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
         <div class="sidebar-user-name" id="sidebar-nombre">—</div>
         <div class="sidebar-user-role" id="sidebar-rol">—</div>
       </div>
-      <button class="sidebar-logout" onclick="cerrarSesion()">↪</button>
     </div>
+    <button onclick="cerrarSesion()" style="width:100%;margin-top:8px;padding:8px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#FCA5A5;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(220,38,38,.25)'" onmouseout="this.style.background='rgba(220,38,38,.15)'">
+      ↪ Cerrar sesión
+    </button>
   </div>
 </aside>
 
@@ -148,7 +148,7 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
           <div class="pc-tipo"><span id="pc-tipo">—</span><span>·</span><span id="pc-so">—</span></div>
         </div>
       </div>
-      <span class="badge green" id="pc-estado-badge">Operativo</span>
+      <span class="badge green" id="pc-estado-badge">—</span>
     </div>
 
     <div class="detail-grid">
@@ -156,7 +156,7 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
         <div class="card-header">
           <span class="card-header-icon">📍</span>
           <span class="card-title">Ubicación y asignación</span>
-          <span class="card-source sql">SQL Server</span>
+          <span class="card-source sql">MySQL</span>
         </div>
         <div class="card-body">
           <div class="field-row"><span class="field-label">ID Equipo</span><span class="field-value mono" id="d-id">—</span></div>
@@ -173,15 +173,8 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
           <span class="card-title">Hardware instalado</span>
           <span class="card-source mongo">MongoDB</span>
         </div>
-        <div class="card-body">
-          <div class="field-row"><span class="field-label">Fabricante</span><span class="field-value" id="d-fabricante">—</span></div>
-          <div class="field-row"><span class="field-label">Modelo</span><span class="field-value" id="d-modelo">—</span></div>
-          <div class="field-row"><span class="field-label">Procesador (CPU)</span><span class="field-value tag" id="d-cpu">—</span></div>
-          <div class="field-row"><span class="field-label">Memoria RAM</span><span class="field-value tag" id="d-ram">—</span></div>
-          <div class="field-row"><span class="field-label">Almacenamiento</span><span class="field-value tag" id="d-disco">—</span></div>
-          <div class="field-row"><span class="field-label">Sistema Operativo</span><span class="field-value" id="d-so">—</span></div>
-          <div class="field-row"><span class="field-label">Monitor</span><span class="field-value" id="d-monitor">—</span></div>
-          <div class="field-row"><span class="field-label">Periféricos</span><span class="field-value" id="d-perifericos">—</span></div>
+        <div class="card-body" id="hw-body">
+          <div class="loading">Cargando hardware...</div>
         </div>
       </div>
     </div>
@@ -196,18 +189,22 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
       <button class="modal-close" onclick="cerrarModal('modal-editar')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-section">📍 Ubicación — SQL Server</div>
+      <div class="form-section">📍 Ubicación — MySQL</div>
       <div class="form-grid">
         <div class="fg"><label class="fl">Laboratorio</label>
           <select class="fsel" id="e-lab">
-            <option value="Laboratorio SO">Laboratorio SO</option>
-            <option value="Laboratorio 1">Laboratorio 1</option>
-            <option value="Laboratorio 4">Laboratorio 4</option>
-            <option value="Laboratorio 5">Laboratorio 5</option>
+            <option value="1">Laboratorio SO</option>
+            <option value="2">Laboratorio 1</option>
+            <option value="3">Laboratorio 4</option>
+            <option value="4">Laboratorio 5</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Banco / Mesa</label><input type="text" class="fi" id="e-banco"></div>
-        <div class="fg"><label class="fl">Responsable</label><input type="text" class="fi" id="e-responsable"></div>
+        <div class="fg"><label class="fl">Responsable</label>
+          <select class="fsel" id="e-responsable">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
         <div class="fg"><label class="fl">Último mantenimiento</label><input type="date" class="fi" id="e-mantenimiento"></div>
         <div class="fg"><label class="fl">Estado</label>
           <select class="fsel" id="e-estado">
@@ -215,19 +212,6 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
             <option value="mantenimiento">En mantenimiento</option>
             <option value="fuera de servicio">Fuera de servicio</option>
           </select>
-        </div>
-      </div>
-      <div class="form-section">⚙ Hardware — MongoDB</div>
-      <div class="form-grid">
-        <div class="fg"><label class="fl">Fabricante</label><input type="text" class="fi" id="e-fabricante"></div>
-        <div class="fg"><label class="fl">Modelo</label><input type="text" class="fi" id="e-modelo"></div>
-        <div class="fg"><label class="fl">CPU</label><input type="text" class="fi" id="e-cpu"></div>
-        <div class="fg"><label class="fl">RAM</label><input type="text" class="fi" id="e-ram"></div>
-        <div class="fg"><label class="fl">Disco</label><input type="text" class="fi" id="e-disco"></div>
-        <div class="fg"><label class="fl">Sistema Operativo</label><input type="text" class="fi" id="e-so"></div>
-        <div class="fg"><label class="fl">Monitor</label><input type="text" class="fi" id="e-monitor"></div>
-        <div class="fg"><label class="fl">Tipo</label>
-          <select class="fsel" id="e-tipo"><option value="Desktop">Desktop</option><option value="Laptop">Laptop</option></select>
         </div>
       </div>
     </div>
@@ -268,100 +252,128 @@ document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpper
 function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
 
 const params = new URLSearchParams(window.location.search)
-
-const datosPC = {
-  id:            params.get('id')            || 'PC-LAB1-001',
-  lab:           params.get('lab')           || 'Laboratorio 1',
-  banco:         params.get('banco')         || '01',
-  responsable:   params.get('responsable')   || 'Sin asignar',
-  mantenimiento: params.get('mantenimiento') || 'Sin registro',
-  estado:        params.get('estado')        || 'operativo',
-  fabricante:    params.get('fabricante')    || 'Dell',
-  modelo:        params.get('modelo')        || 'OptiPlex 7090',
-  cpu:           params.get('cpu')           || 'Intel Core i5-10500 @ 3.1GHz',
-  ram:           params.get('ram')           || '8 GB DDR4',
-  disco:         params.get('disco')         || '256 GB SSD',
-  so:            params.get('so')            || 'Ubuntu 22.04 LTS',
-  monitor:       params.get('monitor')       || 'Dell 22" Full HD',
-  perifericos:   params.get('perifericos')   || 'Mouse + Teclado USB',
-  tipo:          params.get('tipo')          || 'Desktop',
-}
-
-let pcActual = { ...datosPC }
+const pcId = params.get('id')
+let pcActual = {}
 
 function badgeClass(e) { return e==='operativo'?'green':e==='mantenimiento'?'yellow':'red' }
 
-function renderDetalle(pc) {
+function formatFecha(f) {
+  if (!f) return 'Sin registro'
+  const d = new Date(f)
+  if (isNaN(d)) return f
+  return d.toLocaleDateString('es-AR')
+}
+
+function renderSQL(pc) {
   document.getElementById('topbar-id').textContent = pc.id
   document.getElementById('pc-id').textContent = pc.id
-  document.getElementById('pc-tipo').textContent = pc.tipo
-  document.getElementById('pc-so').textContent = pc.so
+  document.getElementById('d-id').textContent = pc.id
+  document.getElementById('d-lab').textContent = pc.laboratorio
+  document.getElementById('d-banco').textContent = 'Banco ' + pc.banco
+  document.getElementById('d-responsable').textContent = pc.responsable || 'Sin asignar'
+  document.getElementById('d-mantenimiento').textContent = formatFecha(pc.mantenimiento)
+  document.getElementById('d-estado').textContent = pc.estado.charAt(0).toUpperCase() + pc.estado.slice(1)
   const badge = document.getElementById('pc-estado-badge')
   badge.textContent = pc.estado.charAt(0).toUpperCase() + pc.estado.slice(1)
   badge.className = 'badge ' + badgeClass(pc.estado)
-  document.getElementById('d-id').textContent = pc.id
-  document.getElementById('d-lab').textContent = pc.lab
-  document.getElementById('d-banco').textContent = 'Banco ' + pc.banco
-  document.getElementById('d-responsable').textContent = pc.responsable
-  document.getElementById('d-mantenimiento').textContent = pc.mantenimiento
-  document.getElementById('d-estado').textContent = pc.estado.charAt(0).toUpperCase() + pc.estado.slice(1)
-  document.getElementById('d-fabricante').textContent = pc.fabricante
-  document.getElementById('d-modelo').textContent = pc.modelo
-  document.getElementById('d-cpu').textContent = pc.cpu
-  document.getElementById('d-ram').textContent = pc.ram
-  document.getElementById('d-disco').textContent = pc.disco
-  document.getElementById('d-so').textContent = pc.so
-  document.getElementById('d-monitor').textContent = pc.monitor
-  document.getElementById('d-perifericos').textContent = pc.perifericos
+}
+
+function renderMongo(hw) {
+  if (!hw || hw.error) {
+    document.getElementById('hw-body').innerHTML = `<div class="loading">Hardware no encontrado en MongoDB</div>`
+    document.getElementById('pc-tipo').textContent = '—'
+    document.getElementById('pc-so').textContent = '—'
+    return
+  }
+  document.getElementById('pc-tipo').textContent = hw.tipo || '—'
+  document.getElementById('pc-so').textContent = hw.so || '—'
+  document.getElementById('hw-body').innerHTML = `
+    <div class="field-row"><span class="field-label">Fabricante</span><span class="field-value">${hw.fabricante||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Modelo</span><span class="field-value">${hw.modelo||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Procesador (CPU)</span><span class="field-value tag">${hw.cpu||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Memoria RAM</span><span class="field-value tag">${hw.ram||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Almacenamiento</span><span class="field-value tag">${hw.disco||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Sistema Operativo</span><span class="field-value">${hw.so||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Monitor</span><span class="field-value">${hw.monitor||'—'}</span></div>
+    <div class="field-row"><span class="field-label">Periféricos</span><span class="field-value">${hw.perifericos||'—'}</span></div>
+  `
+}
+
+async function cargarDatos() {
+  try {
+    // Cargar datos SQL
+    const resSql = await fetch(`/api/equipos/${pcId}`)
+    pcActual = await resSql.json()
+    renderSQL(pcActual)
+
+    // Cargar hardware MongoDB
+    const resMongo = await fetch(`/api/hardware/${pcId}`)
+    const hw = await resMongo.json()
+    renderMongo(hw)
+  } catch(err) {
+    console.error('Error:', err)
+  }
+}
+
+async function cargarResponsablesEdit() {
+  try {
+    const res = await fetch('/api/responsables')
+    const data = await res.json()
+    const sel = document.getElementById('e-responsable')
+    sel.innerHTML = '<option value="">Sin asignar</option>'
+    data.forEach(r => {
+      sel.innerHTML += `<option value="${r.id}">${r.apellido}, ${r.nombre}</option>`
+    })
+  } catch(err) {}
 }
 
 function abrirEditar() {
-  document.getElementById('e-lab').value = pcActual.lab
+  cargarResponsablesEdit()
   document.getElementById('e-banco').value = pcActual.banco
-  document.getElementById('e-responsable').value = pcActual.responsable
-  document.getElementById('e-mantenimiento').value = pcActual.mantenimiento
+  document.getElementById('e-mantenimiento').value = pcActual.mantenimiento ? new Date(pcActual.mantenimiento).toISOString().split('T')[0] : ''
   document.getElementById('e-estado').value = pcActual.estado
-  document.getElementById('e-fabricante').value = pcActual.fabricante
-  document.getElementById('e-modelo').value = pcActual.modelo
-  document.getElementById('e-cpu').value = pcActual.cpu
-  document.getElementById('e-ram').value = pcActual.ram
-  document.getElementById('e-disco').value = pcActual.disco
-  document.getElementById('e-so').value = pcActual.so
-  document.getElementById('e-monitor').value = pcActual.monitor
-  document.getElementById('e-tipo').value = pcActual.tipo
   document.getElementById('modal-editar').classList.add('visible')
 }
 
-function guardarEdicion() {
-  pcActual = { ...pcActual,
-    lab: document.getElementById('e-lab').value,
-    banco: document.getElementById('e-banco').value,
-    responsable: document.getElementById('e-responsable').value,
-    mantenimiento: document.getElementById('e-mantenimiento').value,
-    estado: document.getElementById('e-estado').value,
-    fabricante: document.getElementById('e-fabricante').value,
-    modelo: document.getElementById('e-modelo').value,
-    cpu: document.getElementById('e-cpu').value,
-    ram: document.getElementById('e-ram').value,
-    disco: document.getElementById('e-disco').value,
-    so: document.getElementById('e-so').value,
-    monitor: document.getElementById('e-monitor').value,
-    tipo: document.getElementById('e-tipo').value,
+async function guardarEdicion() {
+  try {
+    const res = await fetch(`/api/equipos/${pcId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id_laboratorio: parseInt(document.getElementById('e-lab').value),
+        banco: document.getElementById('e-banco').value,
+        id_responsable: document.getElementById('e-responsable').value || null,
+        ultimo_mantenimiento: document.getElementById('e-mantenimiento').value || null,
+        estado: document.getElementById('e-estado').value
+      })
+    })
+    const data = await res.json()
+    if (data.error) { showToast('⚠ ' + data.error, 'err'); return }
+    cerrarModal('modal-editar')
+    showToast('✓ Equipo actualizado', 'ok')
+    cargarDatos()
+  } catch(err) {
+    showToast('⚠ Error de conexión', 'err')
   }
-  renderDetalle(pcActual)
-  cerrarModal('modal-editar')
-  showToast('✓ Equipo actualizado correctamente', 'ok')
 }
 
 function abrirEliminar() {
-  document.getElementById('confirm-id').textContent = pcActual.id
+  document.getElementById('confirm-id').textContent = pcId
   document.getElementById('modal-eliminar').classList.add('visible')
 }
 
-function confirmarEliminar() {
-  cerrarModal('modal-eliminar')
-  showToast('🗑 Equipo eliminado del inventario', 'ok')
-  setTimeout(() => window.location.href = '/dashboard.html', 1500)
+async function confirmarEliminar() {
+  try {
+    const res = await fetch(`/api/equipos/${pcId}`, { method: 'DELETE' })
+    const data = await res.json()
+    if (data.error) { showToast('⚠ ' + data.error, 'err'); return }
+    cerrarModal('modal-eliminar')
+    showToast('🗑 Equipo eliminado', 'ok')
+    setTimeout(() => window.location.href = '/dashboard.html', 1500)
+  } catch(err) {
+    showToast('⚠ Error de conexión', 'err')
+  }
 }
 
 function cerrarModal(id) { document.getElementById(id).classList.remove('visible') }
@@ -371,7 +383,7 @@ function showToast(msg, tipo) {
   setTimeout(() => t.className = 'toast ' + tipo, 3000)
 }
 
-renderDetalle(pcActual)
+cargarDatos()
 </script>
 </body>
 </html>
