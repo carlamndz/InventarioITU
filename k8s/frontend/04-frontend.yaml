@@ -1,0 +1,75 @@
+# ─────────────────────────────────────────────
+# Deployment: inventario-web (Frontend Node.js/Express)
+# ─────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventario-web
+  namespace: egi-inventario
+  labels:
+    app: inventario-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventario-web
+  template:
+    metadata:
+      labels:
+        app: inventario-web
+    spec:
+      containers:
+        - name: inventario-web
+          # Imagen construida localmente en Minikube
+          # (ver README: eval $(minikube docker-env) antes de hacer docker build)
+          image: inventario-itu:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+            # MongoDB: usa el Service interno del clúster
+            - name: MONGO_HOST
+              value: "inventario-db"
+            # MySQL: usa el ExternalName Service que apunta a PC-A
+            - name: MYSQL_HOST
+              value: "ubicacion-db"
+            # LDAP: usa el ExternalName Service que apunta a PC-A
+            - name: LDAP_URL
+              value: "ldap://ldap-service:389"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+---
+# ─────────────────────────────────────────────
+# Service: inventario-web (NodePort = accesible desde fuera)
+# ─────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventario-web
+  namespace: egi-inventario
+  labels:
+    app: inventario-web
+spec:
+  selector:
+    app: inventario-web
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30080
+  type: NodePort

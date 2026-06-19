@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────
+# ExternalName Services para servicios en PC-A (Windows)
+#
+# IMPORTANTE: reemplazar 192.168.1.10 con la IP real de PC-A
+# Para saber esa IP, correr en PC-A: ipconfig
+# ─────────────────────────────────────────────
+
+# Service que apunta a MySQL en PC-A (puerto 3306)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ubicacion-db
+  namespace: egi-inventario
+  labels:
+    app: ubicacion-db
+spec:
+  type: ExternalName
+  # ↓ CAMBIAR por la IP real de PC-A
+  externalName: "192.168.1.10"
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+---
+# Service que apunta al LDAP/AD en PC-A (puerto 389)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ldap-service
+  namespace: egi-inventario
+  labels:
+    app: ldap-service
+spec:
+  type: ExternalName
+  # ↓ CAMBIAR por la IP real de PC-A
+  externalName: "192.168.1.10"
+  ports:
+    - protocol: TCP
+      port: 389
+      targetPort: 389

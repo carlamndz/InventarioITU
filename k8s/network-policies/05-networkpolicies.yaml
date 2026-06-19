@@ -1,0 +1,108 @@
+# ─────────────────────────────────────────────
+# REGLA 0: Denegar TODO el tráfico por defecto (Zero-Trust)
+# ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: egi-inventario
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# ─────────────────────────────────────────────
+# REGLA 1: MongoDB solo acepta conexiones del frontend
+# ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-mongo
+  namespace: egi-inventario
+spec:
+  podSelector:
+    matchLabels:
+      app: inventario-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: inventario-web
+      ports:
+        - protocol: TCP
+          port: 27017
+
+---
+# ─────────────────────────────────────────────
+# REGLA 2: Frontend puede hacer egress hacia
+#          MongoDB, MySQL (PC-A) y LDAP (PC-A)
+# ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-egress
+  namespace: egi-inventario
+spec:
+  podSelector:
+    matchLabels:
+      app: inventario-web
+  policyTypes:
+    - Egress
+  egress:
+    # → MongoDB (dentro del clúster)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: inventario-db
+      ports:
+        - protocol: TCP
+          port: 27017
+    # → MySQL en PC-A (puerto 3306)
+    - to:
+        - ipBlock:
+            # CAMBIAR por la IP real de PC-A
+            cidr: 192.168.1.10/32
+      ports:
+        - protocol: TCP
+          port: 3306
+    # → LDAP en PC-A (puerto 389)
+    - to:
+        - ipBlock:
+            # CAMBIAR por la IP real de PC-A
+            cidr: 192.168.1.10/32
+      ports:
+        - protocol: TCP
+          port: 389
+    # → DNS interno del clúster (necesario para resolver nombres)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+# ─────────────────────────────────────────────
+# REGLA 3: Frontend acepta tráfico HTTP entrante
+#          (desde fuera del clúster vía NodePort)
+# ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: egi-inventario
+spec:
+  podSelector:
+    matchLabels:
+      app: inventario-web
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 3000

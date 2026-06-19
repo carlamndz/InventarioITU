@@ -1,0 +1,71 @@
+services:
+
+  # ─────────────────────────────────────────────
+  # Frontend: app Node.js/Express
+  # ─────────────────────────────────────────────
+  inventario-web:
+    build: ./app
+    container_name: inventario-web
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      MONGO_HOST: inventario-db
+      MYSQL_HOST: ubicacion-db
+      LDAP_URL: ldap://ldap-service:389
+    depends_on:
+      inventario-db:
+        condition: service_healthy
+    networks:
+      - egi-network
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # Base de datos: MongoDB (hardware)
+  # ─────────────────────────────────────────────
+  inventario-db:
+    image: mongo:7.0
+    container_name: inventario-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin1234
+      MONGO_INITDB_DATABASE: inventario_hardware
+    volumes:
+      - mongo-data:/data/db
+      # Cuando el compañero tenga los JSONs, descomentar:
+      # - ./db/mongodb/init.js:/docker-entrypoint-initdb.d/init.js
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - egi-network
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # Base de datos: MySQL (ubicación/equipos)
+  # Placeholder hasta que PC-A esté lista.
+  # Descomentar cuando el compañero de BD termine.
+  # ─────────────────────────────────────────────
+  # ubicacion-db:
+  #   image: mysql:8.0
+  #   container_name: ubicacion-db
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root1234
+  #     MYSQL_DATABASE: inventario_egi
+  #   networks:
+  #     - egi-network
+  #   restart: unless-stopped
+
+networks:
+  egi-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
