@@ -63,7 +63,10 @@ Las dos bases de datos se vinculan mediante un identificador compartido: el **ID
 
 El login no valida usuario y contraseña contra una tabla propia: delega esa validación al servicio `ldap-service`, consultando el directorio institucional vía el protocolo LDAP. Se mantiene además un acceso local de respaldo (`admin` / `1234`) para poder seguir desarrollando sin depender de que el directorio esté siempre disponible.
 
-Ver el diagrama de arquitectura completo en `docs/flujograma-arquitectura.mermaid`.
+<img width="1024" height="1377" alt="DIAGRAMA DE ARQ" src="https://github.com/user-attachments/assets/58b2e451-c631-4bd0-b032-15ee5259b99d" />
+
+## Flujo de uso 
+<img width="1024" height="1536" alt="DIAGRAMA DE USO" src="https://github.com/user-attachments/assets/39c1b74d-fd3c-4227-ba7b-8896a29af83a" />
 
 ## Estructura de carpetas
 
@@ -249,4 +252,4 @@ Dentro del clúster, la app no se conecta a `localhost` sino a los nombres de lo
 
 ---
 
-*Módulo desarrollado por Sol Melocchi — Proyecto Integrador EGI, ITU Mendoza, 2026.*
+*Proyecto Integrador EGI, ITU Mendoza, 2026.*
