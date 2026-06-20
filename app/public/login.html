@@ -110,6 +110,13 @@ body {
 .fi:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
 .fi::placeholder { color: var(--text-light); }
 .fi-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--text-light); }
+#password.fi { padding-right: 38px; }
+.toggle-pass {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 4px;
+  font-size: 15px; line-height: 1; color: var(--text-light); transition: color .2s;
+}
+.toggle-pass:hover { color: var(--accent); }
  
 .login-hint {
   display: flex; align-items: center; gap: 8px;
@@ -183,7 +190,7 @@ body {
         <label class="fl">Contraseña</label>
         <div class="fi-wrap">
           <input type="password" class="fi" id="password" placeholder="Tu contraseña de red" required autocomplete="current-password">
-          <span class="fi-icon">🔒</span>
+          <button type="button" class="toggle-pass" id="toggle-pass" aria-label="Mostrar contraseña">👁</button>
         </div>
       </div>
  
@@ -207,11 +214,21 @@ body {
 </div>
  
 <script>
+const togglePass = document.getElementById('toggle-pass')
+const passInput  = document.getElementById('password')
+
+togglePass.addEventListener('click', () => {
+  const visible = passInput.type === 'text'
+  passInput.type = visible ? 'password' : 'text'
+  togglePass.textContent = visible ? '👁' : '🙈'
+  togglePass.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña')
+})
+
 document.getElementById('form-login').addEventListener('submit', async (e) => {
   e.preventDefault()
  
   const usuario  = document.getElementById('usuario').value
-  const password = document.getElementById('password').value
+  const password = passInput.value
   const msg      = document.getElementById('msg')
   const btn      = document.getElementById('btn-login')
  
@@ -248,4 +265,3 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
  
 </body>
 </html>
- 
