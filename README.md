@@ -63,11 +63,15 @@ Las dos bases de datos se vinculan mediante un identificador compartido: el **ID
 
 El login no valida usuario y contraseña contra una tabla propia: delega esa validación al servicio `ldap-service`, consultando el directorio institucional vía el protocolo LDAP. Se mantiene además un acceso local de respaldo (`admin` / `1234`) para poder seguir desarrollando sin depender de que el directorio esté siempre disponible.
 
-<img width="1024" height="1377" alt="DIAGRAMA DE ARQ" src="https://github.com/user-attachments/assets/58b2e451-c631-4bd0-b032-15ee5259b99d" />
+<p align="center">
+<img width="1024" height="1392" alt="15b850e9-f90b-4751-b75e-3ed8ffbce746" src="https://github.com/user-attachments/assets/3aeda5d6-6a1c-454b-b844-5fafe02cd191" />
+</p>
 
-## Flujo de uso 
-<img width="1024" height="1536" alt="DIAGRAMA DE USO" src="https://github.com/user-attachments/assets/39c1b74d-fd3c-4227-ba7b-8896a29af83a" />
+## Flujo: registrar un equipo nuevo
 
+<p align="center">
+<img width="1024" height="1536" alt="ChatGPT Image 20 jun 2026, 01_42_56 p m" src="https://github.com/user-attachments/assets/7e54d754-85c6-44a1-ba64-07b336ed5c33" />
+</p>
 ## Estructura de carpetas
 
 ```
@@ -94,35 +98,6 @@ npm install
 node index.js
 ```
 
-La aplicación queda disponible en `http://localhost:3000`, redirigiendo automáticamente a `/login.html`.
-
-## Configuración de SQL Server (entorno local)
-
-Estos son los pasos necesarios para dejar SQL Server Express listo para que la app se conecte (documentados acá para que cualquier integrante del equipo pueda replicarlos sin perder tiempo):
-
-1. **Instalar SQL Server Express** (edición gratuita, liviana) desde [microsoft.com/sql-server/sql-server-downloads](https://www.microsoft.com/es-es/sql-server/sql-server-downloads), instalación tipo **Basic**.
-2. **Instalar SSMS** (SQL Server Management Studio) desde [aka.ms/ssmsfullsetup](https://aka.ms/ssmsfullsetup) para administrar la base visualmente.
-3. **Activar el modo de autenticación mixto**: en SSMS, clic derecho sobre el servidor → Properties → Security → marcar *"SQL Server and Windows Authentication mode"*.
-4. **Crear el login de la app** (en vez de usar `sa` directamente, se crea un usuario dedicado):
-   ```sql
-   CREATE LOGIN admin WITH PASSWORD = '1234', CHECK_POLICY = OFF;
-   GO
-   USE inventario_egi;
-   GO
-   CREATE USER admin FOR LOGIN admin;
-   GO
-   ALTER ROLE db_owner ADD MEMBER admin;
-   GO
-   ```
-5. **Activar TCP/IP** en SQL Server Configuration Manager (`SQL Server Network Configuration → Protocols for SQLEXPRESS → TCP/IP → Enable`), y fijar el puerto estático `1433` en las propiedades de `IPAll` (campo `TcpPort`, dejando `TcpDynamicPorts` vacío).
-6. **Reiniciar el servicio** de SQL Server (`services.msc → SQL Server (SQLEXPRESS) → Reiniciar`) después de cada cambio de configuración.
-7. **Verificar que el puerto esté escuchando**:
-   ```
-   netstat -an | findstr 1433
-   ```
-   Debe aparecer una línea con `LISTENING`.
-8. **Crear la base y cargar los datos**: correr en SSMS el script de creación de tablas (`db/sqlserver/01_create_tables.sql` o equivalente) y luego el de carga de datos de prueba.
-
 ## Configuración de bases de datos en el código
 
 La conexión a SQL Server se configura en `index.js`:
@@ -141,7 +116,6 @@ const sqlConfig = {
 }
 ```
 
-> **Nota:** las credenciales pueden variar según cómo cada integrante tenga configurado su entorno local. Verificar este valor antes de correr el proyecto.
 
 La conexión a MongoDB:
 
@@ -244,9 +218,6 @@ Dentro del clúster, la app no se conecta a `localhost` sino a los nombres de lo
 ## Problemas conocidos y troubleshooting
 
 - **Login failed for user genérico**: SQL Server devuelve el mismo mensaje de "Login failed" tanto si la contraseña es incorrecta como si la base de datos especificada en la conexión no existe todavía. Si esto pasa, verificar primero que la base `inventario_egi` esté creada antes de sospechar de la contraseña.
-- **Error de certificado SSL al conectar con SSMS**: marcar *"Trust server certificate"* en Options → Connection Properties al conectar (necesario para certificados autofirmados en entornos locales).
-- **SQL Server Configuration Manager no aparece en el menú inicio**: buscar el archivo `SQLServerManagerXX.msc` directamente en `C:\Windows\SysWOW64\` (el número de versión varía según la instalación).
-- **Puerto 1433 no escucha (`netstat` no muestra `LISTENING`)**: revisar que TCP/IP esté habilitado y que el puerto esté fijado como estático en el registro (`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQLXX.SQLEXPRESS\MSSQLServer\SuperSocketNetLib\Tcp\IPAll`, campo `TcpPort = 1433`, `TcpDynamicPorts` vacío). Reiniciar el servicio después de cualquier cambio.
 - **Duplicados en MongoDB**: el endpoint `POST /api/hardware` usa `findOneAndUpdate` con `upsert: true` para evitar crear documentos duplicados si se reenvía el mismo ID.
 - **Eliminación de equipos**: el `DELETE /api/equipos/:id` borra explícitamente en ambas bases (SQL Server y MongoDB) para no dejar registros huérfanos en MongoDB.
 
