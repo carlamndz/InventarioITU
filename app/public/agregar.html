@@ -123,7 +123,7 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
           <div class="form-card-header">
             <span class="form-card-icon">📍</span>
             <span class="form-card-title">Ubicación y asignación</span>
-            <span class="form-card-source sql">MySQL</span>
+            <span class="form-card-source sql">SQL Server</span>
           </div>
           <div class="form-card-body">
             <div class="form-grid">
@@ -396,7 +396,7 @@ document.getElementById('form-agregar').addEventListener('submit', async (e) => 
   const id    = `PC-LAB${labCodigo[lab]}-${String(banco).padStart(3,'0')}`
 
   try {
-    // 1. Guardar en MySQL
+    // 1. Guardar en SQL server
     const resSql = await fetch('/api/equipos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -410,7 +410,7 @@ document.getElementById('form-agregar').addEventListener('submit', async (e) => 
       })
     })
     const dataSql = await resSql.json()
-    if (dataSql.error) { showToast('⚠ Error MySQL: ' + dataSql.error, 'err'); btn.textContent = '＋ Registrar equipo'; btn.disabled = false; return }
+    if (dataSql.error) { showToast('⚠ Error SQL Server: ' + dataSql.error, 'err'); btn.textContent = '＋ Registrar equipo'; btn.disabled = false; return }
 
     // 2. Guardar hardware en MongoDB
     const resMongo = await fetch('/api/hardware', {
