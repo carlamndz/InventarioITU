@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 const LDAP_URL   = process.env.LDAP_URL   || 'ldap://ldap-service-external:389'
 const MONGO_HOST = process.env.MONGO_HOST || 'localhost'
-const SQL_HOST   = process.env.MYSQL_HOST || 'localhost' // se mantiene el nombre de variable para no romper el manifiesto de Kubernetes
+const SQL_HOST = process.env.SQLSERVER_HOST || 'localhost'
 
 // ── CONEXIÓN MONGODB ──────────────────────────────────
 mongoose.connect(`mongodb://${MONGO_HOST}:27017/inventario_hardware`)
