@@ -6,21 +6,29 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: frontend
+      app: inventario-web
   policyTypes:
     - Egress
   egress:
     - to:
         - podSelector:
             matchLabels:
-              app: sqlserver
-      ports:
-        - protocol: TCP
-          port: 1433
-    - to:
-        - podSelector:
-            matchLabels:
-              app: mongodb
+              app: inventario-db
       ports:
         - protocol: TCP
           port: 27017
+    - to:
+        - ipBlock:
+            cidr: 192.168.1.0/24
+      ports:
+        - protocol: TCP
+          port: 1433
+        - protocol: TCP
+          port: 389
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53

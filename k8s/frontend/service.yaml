@@ -1,15 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: inventario-web
   namespace: egi-inventario
   labels:
-    app: frontend
+    app: inventario-web
 spec:
   selector:
-    app: frontend
+    app: inventario-web
   ports:
     - protocol: TCP
-      port: 80
+      port: 3000
       targetPort: 3000
+      nodePort: 30080
   type: NodePort

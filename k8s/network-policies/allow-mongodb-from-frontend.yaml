@@ -6,14 +6,14 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: mongodb
+      app: inventario-db
   policyTypes:
     - Ingress
   ingress:
     - from:
         - podSelector:
             matchLabels:
-              app: frontend
+              app: inventario-web
       ports:
         - protocol: TCP
           port: 27017
