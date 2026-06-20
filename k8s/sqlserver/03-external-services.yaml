@@ -1,11 +1,9 @@
 # ─────────────────────────────────────────────
-# ExternalName Services para servicios en PC-A (Windows)
-#
-# IMPORTANTE: reemplazar 192.168.1.10 con la IP real de PC-A
-# Para saber esa IP, correr en PC-A: ipconfig
+# ExternalName Services para SQL Server y Active Directory
+# SQL Server: 192.168.1.20 puerto 1433
+# Active Directory/LDAP: 192.168.1.10 puerto 389
 # ─────────────────────────────────────────────
 
-# Service que apunta a MySQL en PC-A (puerto 3306)
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,15 +13,13 @@ metadata:
     app: ubicacion-db
 spec:
   type: ExternalName
-  # ↓ CAMBIAR por la IP real de PC-A
-  externalName: "192.168.1.10"
+  externalName: "192.168.1.20"
   ports:
     - protocol: TCP
-      port: 3306
-      targetPort: 3306
+      port: 1433
+      targetPort: 1433
 
 ---
-# Service que apunta al LDAP/AD en PC-A (puerto 389)
 apiVersion: v1
 kind: Service
 metadata:
@@ -33,7 +29,6 @@ metadata:
     app: ldap-service
 spec:
   type: ExternalName
-  # ↓ CAMBIAR por la IP real de PC-A
   externalName: "192.168.1.10"
   ports:
     - protocol: TCP
