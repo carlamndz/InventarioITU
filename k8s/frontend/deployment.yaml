@@ -26,10 +26,10 @@ spec:
               value: "production"
             - name: MONGO_HOST
               value: "inventario-db"
-            - name: MYSQL_HOST
+            - name: SQLSERVER_HOST
               value: "ubicacion-db"
             - name: LDAP_URL
-              value: "ldap://ldap-service:389"
+              value: "ldap://ldap-service-external:389"
           livenessProbe:
             httpGet:
               path: /
