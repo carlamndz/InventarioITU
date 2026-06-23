@@ -251,7 +251,13 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
       msg.textContent = '✓ Acceso concedido. Redirigiendo...'
       msg.className = 'msg ok'
-      setTimeout(() => window.location.href = '/dashboard.html', 1200)
+      // Por estas dos:
+     const rol = data.usuario.rol
+setTimeout(() => {
+    window.location.href = (rol === 'alumno' || rol === 'docente')
+        ? '/dashboardread.html'
+        : '/dashboard.html'
+}, 1200)
     }
   } catch {
     msg.textContent = '⚠ Error de conexión con el servidor.'
