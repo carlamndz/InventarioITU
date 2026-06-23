@@ -32,9 +32,9 @@ const Hardware = mongoose.model('Hardware', new mongoose.Schema({
 
 // ── CONEXIÓN SQL SERVER ───────────────────────────────
 const sqlConfig = {
-    user: 'admin',
-    password: '1234',
-    server: SQL_HOST,
+    user: 'admin.user@itu.local',
+    password: '2026ITU!',
+    server: process.env.SQLSERVER_HOST || 'sql-server-external', 
     port: 1433,
     database: 'inventario_egi',
     options: {
@@ -42,15 +42,22 @@ const sqlConfig = {
         trustServerCertificate: true
     }
 }
-
 let pool
-sql.connect(sqlConfig)
-    .then(p => {
-        pool = p
+// Agregamos una función autoejecutable para reintentar la conexión si falla al arrancar
+async function conectarSQL() {
+    try {
+        // Imprimimos en el log exactamente a dónde está intentando viajar antes de conectar
+        console.log(`[SQL] Intentando conectar a SQL Server en: ${sqlConfig.server}:1433...`)
+        pool = await sql.connect(sqlConfig)
         console.log('Conectado a SQL Server ✅')
-    })
-    .catch(err => console.log('Error conectando a SQL Server:', err))
+    } catch (err) {
+        console.log('Error conectando a SQL Server:', err.message || err)
+        console.log('[SQL] Reintentando conexión en 5 segundos...')
+        setTimeout(conectarSQL, 5000) // Evita que el contenedor muera si SQL Server tarda en responder
+    }
+}
 
+conectarSQL()
 // Redirección de la raíz al login
 app.get('/', (req, res) => {
     res.redirect('/login.html')
