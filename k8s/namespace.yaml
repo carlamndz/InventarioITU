@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: egi-inventario
+  labels:
+    proyecto: inventario-itu
+    equipo: egi-2026
