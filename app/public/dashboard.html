@@ -110,9 +110,7 @@ tr:hover td { background: #FAFBFC; }
   <a href="/dashboard.html" class="sidebar-link active"><span class="sidebar-icon">⊞</span> Dashboard</a>
   <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
   <div class="sidebar-section">Gestión</div>
-  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
   <a href="/responsables.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
-  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
   <div class="sidebar-footer">
     <div class="sidebar-user">
       <div class="sidebar-avatar" id="avatar">A</div>
@@ -209,6 +207,7 @@ tr:hover td { background: #FAFBFC; }
 <script>
 const usuario = JSON.parse(localStorage.getItem('usuario'))
 if (!usuario) window.location.href = '/login.html'
+if (usuario.rol === 'alumno' || usuario.rol === 'docente') window.location.href = '/dashboardread.html'
 document.getElementById('sidebar-nombre').textContent = usuario.nombre
 document.getElementById('sidebar-rol').textContent = usuario.rol
 document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
