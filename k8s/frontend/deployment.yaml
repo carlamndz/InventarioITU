@@ -31,9 +31,15 @@ spec:
             - name: LDAP_URL
               value: "ldap://ldap-service-external:389"
             - name: SQL_USER
-              value: "user_inventario"       # El nombre de usuario sin el "ITU\" inicial
+              valueFrom:
+                secretKeyRef:
+                  name: sql-secret
+                  key: username
             - name: SQL_PASSWORD
-              value: "2026ITU!"
+              valueFrom:
+                secretKeyRef:
+                  name: sql-secret
+                  key: password
           livenessProbe:
             httpGet:
               path: /
