@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 const LDAP_URL   = process.env.LDAP_URL   || 'ldap://ldap-service-external:389'
 const MONGO_HOST = process.env.MONGO_HOST || 'localhost'
-const SQL_HOST = process.env.SQLSERVER_HOST || 'localhost'
+const SQL_HOST   = process.env.SQLSERVER_HOST || 'localhost'
 
 // ── CONEXIÓN MONGODB ──────────────────────────────────
 mongoose.connect(`mongodb://${MONGO_HOST}:27017/inventario_hardware`)
@@ -32,9 +32,9 @@ const Hardware = mongoose.model('Hardware', new mongoose.Schema({
 
 // ── CONEXIÓN SQL SERVER ───────────────────────────────
 const sqlConfig = {
-    user: 'admin.user@itu.local',
-    password: '2026ITU!',
-    server: process.env.SQLSERVER_HOST || 'sql-server-external', 
+    user: process.env.SQL_USER || 'user_inventario', 
+    password: process.env.SQL_PASSWORD || '2026ITU!',
+    server: process.env.SQLSERVER_HOST || 'sql-server-external',
     port: 1433,
     database: 'inventario_egi',
     options: {
@@ -42,18 +42,17 @@ const sqlConfig = {
         trustServerCertificate: true
     }
 }
+
 let pool
-// Agregamos una función autoejecutable para reintentar la conexión si falla al arrancar
 async function conectarSQL() {
     try {
-        // Imprimimos en el log exactamente a dónde está intentando viajar antes de conectar
-        console.log(`[SQL] Intentando conectar a SQL Server en: ${sqlConfig.server}:1433...`)
+        console.log(`[SQL] Intentando conectar a SQL Server en: ${sqlConfig.server}:1433 usando el usuario: ${sqlConfig.user}...`)
         pool = await sql.connect(sqlConfig)
         console.log('Conectado a SQL Server ✅')
     } catch (err) {
         console.log('Error conectando a SQL Server:', err.message || err)
         console.log('[SQL] Reintentando conexión en 5 segundos...')
-        setTimeout(conectarSQL, 5000) // Evita que el contenedor muera si SQL Server tarda en responder
+        setTimeout(conectarSQL, 5000)
     }
 }
 
@@ -71,7 +70,7 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Usuario y contraseña requeridos' })
     }
 
-    // 1. Validación comodín local (para seguir probando sin depender del AD)
+    // 1. Comodín admin
     if (usuario === 'admin' && password === '1234') {
         console.log('[LOGIN] Acceso exitoso mediante credenciales comodín.')
         return res.json({
@@ -83,12 +82,24 @@ app.post('/login', async (req, res) => {
         })
     }
 
-    // 2. Validación contra Active Directory
+    // 2. Comodín alumno — SACAR ANTES DE PRODUCCIÓN
+    if (usuario === 'alumno' && password === '1234') {
+        return res.json({
+            usuario: {
+                nombre: 'Alumno Prueba',
+                usuario: 'alumno',
+                rol: 'alumno'
+            }
+        })
+    }
+
+    // 3. Active Directory
     let options = {
         ldapOpts: { url: LDAP_URL },
-        userDn: usuario, // ej: tecnico01@itu.local
+        userDn: usuario,
         userPassword: password
     }
+  
 
     try {
         await LdapAuthentication.authenticate(options)
@@ -100,7 +111,7 @@ app.post('/login', async (req, res) => {
             usuario: {
                 nombre: nombreMostrar,
                 usuario: usuario,
-                rol: 'usuario_autenticado_ad'
+                rol: getRolDesdeUsuario(usuario)  // ← detecta por prefijo
             }
         })
     } catch (error) {
@@ -341,6 +352,15 @@ app.post('/api/hardware', async (req, res) => {
         res.json({ error: err.message })
     }
 })
+
+function getRolDesdeUsuario(usuario) {
+    const u = usuario.toLowerCase().split('@')[0]
+    if (u.startsWith('alumno'))  return 'alumno'
+    if (u.startsWith('docente')) return 'docente'
+    if (u.startsWith('tecnico')) return 'tecnico'
+    if (u === 'ad_admin_itu')    return 'administrador'
+    return 'tecnico'
+}
 
 // Escuchar en 0.0.0.0 es indispensable para ambientes contenerizados
 app.listen(3000, '0.0.0.0', () => {
