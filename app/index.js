@@ -204,6 +204,31 @@ app.put('/api/equipos/:id', async (req, res) => {
     }
 })
 
+app.delete('/api/equipos/:id', async (req, res) => {
+    try {
+        // Primero borrar actividad relacionada
+        await pool.request()
+            .input('id', sql.VarChar, req.params.id)
+            .query('DELETE FROM actividad_reciente WHERE id_equipo = @id')
+
+        // Después borrar mantenimientos relacionados
+        await pool.request()
+            .input('id', sql.VarChar, req.params.id)
+            .query('DELETE FROM mantenimientos WHERE id_equipo = @id')
+
+        // Ahora sí borrar el equipo
+        await pool.request()
+            .input('id', sql.VarChar, req.params.id)
+            .query('DELETE FROM equipos WHERE id_equipo = @id')
+
+        // Y borrar de MongoDB
+        await Hardware.deleteMany({ id: req.params.id })
+
+        res.json({ mensaje: 'Equipo eliminado ✅' })
+    } catch (err) {
+        res.json({ error: err.message })
+    }
+})
 // DELETE eliminar equipo (borra de SQL Server y de MongoDB)
 app.delete('/api/equipos/:id', async (req, res) => {
     try {
