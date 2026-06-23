@@ -1,36 +1,53 @@
-# ─────────────────────────────────────────────
-# ExternalName Services para SQL Server y Active Directory
-# SQL Server: 192.168.1.20 puerto 1433
-# Active Directory/LDAP: 192.168.1.10 puerto 389
-# ─────────────────────────────────────────────
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: ubicacion-db
+  name: sql-server-external  # Usamos este nombre estandarizado
   namespace: egi-inventario
-  labels:
-    app: ubicacion-db
 spec:
-  type: ExternalName
-  externalName: "192.168.1.20"
   ports:
     - protocol: TCP
       port: 1433
       targetPort: 1433
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: sql-server-external-slice
+  namespace: egi-inventario
+  labels:
+    kubernetes.io/service-name: sql-server-external
+addressType: IPv4
+ports:
+  - protocol: TCP
+    port: 1433
+endpoints:
+  - addresses:
+      - "192.168.1.20"
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: ldap-service-external
   namespace: egi-inventario
-  labels:
-    app: ldap-service
 spec:
-  type: ExternalName
-  externalName: "192.168.1.10"
   ports:
     - protocol: TCP
       port: 389
       targetPort: 389
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: ldap-service-external-slice
+  namespace: egi-inventario
+  labels:
+    kubernetes.io/service-name: ldap-service-external
+addressType: IPv4
+ports:
+  - protocol: TCP
+    port: 389
+endpoints:
+  - addresses:
+      - "192.168.1.10"
