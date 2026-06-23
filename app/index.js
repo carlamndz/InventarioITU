@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 const LDAP_URL   = process.env.LDAP_URL   || 'ldap://ldap-service-external:389'
 const MONGO_HOST = process.env.MONGO_HOST || 'localhost'
-const SQL_HOST   = process.env.SQLSERVER_HOST || 'localhost'
+const SQL_HOST   = process.env.MYSQL_HOST || 'localhost' // se mantiene el nombre de variable para no romper el manifiesto de Kubernetes
 
 // ── CONEXIÓN MONGODB ──────────────────────────────────
 mongoose.connect(`mongodb://${MONGO_HOST}:27017/inventario_hardware`)
@@ -32,9 +32,9 @@ const Hardware = mongoose.model('Hardware', new mongoose.Schema({
 
 // ── CONEXIÓN SQL SERVER ───────────────────────────────
 const sqlConfig = {
-    user: process.env.SQL_USER || 'user_inventario', 
-    password: process.env.SQL_PASSWORD || '2026ITU!',
-    server: process.env.SQLSERVER_HOST || 'sql-server-external',
+    user: 'admin',
+    password: '1234',
+    server: SQL_HOST,
     port: 1433,
     database: 'inventario_egi',
     options: {
@@ -44,19 +44,13 @@ const sqlConfig = {
 }
 
 let pool
-async function conectarSQL() {
-    try {
-        console.log(`[SQL] Intentando conectar a SQL Server en: ${sqlConfig.server}:1433 usando el usuario: ${sqlConfig.user}...`)
-        pool = await sql.connect(sqlConfig)
+sql.connect(sqlConfig)
+    .then(p => {
+        pool = p
         console.log('Conectado a SQL Server ✅')
-    } catch (err) {
-        console.log('Error conectando a SQL Server:', err.message || err)
-        console.log('[SQL] Reintentando conexión en 5 segundos...')
-        setTimeout(conectarSQL, 5000)
-    }
-}
+    })
+    .catch(err => console.log('Error conectando a SQL Server:', err))
 
-conectarSQL()
 // Redirección de la raíz al login
 app.get('/', (req, res) => {
     res.redirect('/login.html')
@@ -204,6 +198,7 @@ app.put('/api/equipos/:id', async (req, res) => {
     }
 })
 
+
 app.delete('/api/equipos/:id', async (req, res) => {
     try {
         // Primero borrar actividad relacionada
@@ -229,6 +224,7 @@ app.delete('/api/equipos/:id', async (req, res) => {
         res.json({ error: err.message })
     }
 })
+
 // DELETE eliminar equipo (borra de SQL Server y de MongoDB)
 app.delete('/api/equipos/:id', async (req, res) => {
     try {
@@ -298,6 +294,26 @@ app.put('/api/responsables/:id', async (req, res) => {
                 WHERE id_responsable=@id
             `)
         res.json({ mensaje: 'Responsable actualizado ✅' })
+    } catch (err) {
+        res.json({ error: err.message })
+    }
+})
+
+app.delete('/api/responsables/:id', async (req, res) => {
+    try {
+        const check = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query('SELECT COUNT(*) AS total FROM equipos WHERE id_responsable = @id')
+
+        if (check.recordset[0].total > 0) {
+            return res.json({ error: 'No se puede eliminar: tiene equipos asignados' })
+        }
+
+        await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query('DELETE FROM responsables WHERE id_responsable = @id')
+
+        res.json({ mensaje: 'Responsable eliminado ✅' })
     } catch (err) {
         res.json({ error: err.message })
     }
