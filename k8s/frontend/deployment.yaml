@@ -27,7 +27,7 @@ spec:
             - name: MONGO_HOST
               value: "inventario-db"
             - name: SQLSERVER_HOST
-              value: "ubicacion-db"
+              value: "sql-server-external"
             - name: LDAP_URL
               value: "ldap://ldap-service-external:389"
           livenessProbe:
