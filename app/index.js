@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 const LDAP_URL   = process.env.LDAP_URL   || 'ldap://ldap-service-external:389'
 const MONGO_HOST = process.env.MONGO_HOST || 'localhost'
-const SQL_HOST   = process.env.MYSQL_HOST || 'localhost' // se mantiene el nombre de variable para no romper el manifiesto de Kubernetes
+const SQL_HOST   = process.env.SQLSERVER_HOST || 'localhost' // se mantiene el nombre de variable para no romper el manifiesto de Kubernetes
 
 // ── CONEXIÓN MONGODB ──────────────────────────────────
 mongoose.connect(`mongodb://${MONGO_HOST}:27017/inventario_hardware`)
@@ -32,9 +32,9 @@ const Hardware = mongoose.model('Hardware', new mongoose.Schema({
 
 // ── CONEXIÓN SQL SERVER ───────────────────────────────
 const sqlConfig = {
-    user: 'admin',
-    password: '1234',
-    server: SQL_HOST,
+    user: process.env.SQL_USER, 
+    password: process.env.SQL_PASSWORD ,
+    server: process.env.SQLSERVER_HOST,
     port: 1433,
     database: 'inventario_egi',
     options: {
