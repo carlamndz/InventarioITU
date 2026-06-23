@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITU Inventario · Consulta</title>
+<link rel="icon" type="image/png" href="/logoitu.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F0F2F5; --sidebar: #1B2A4A; --sidebar-hover: #243659; --sidebar-active: #2E4A7A;
+  --accent: #2563EB; --accent-light: #EFF6FF; --white: #FFFFFF;
+  --text: #1E293B; --text-muted: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+  --green: #16A34A; --green-bg: #DCFCE7; --red: #DC2626; --red-bg: #FEE2E2;
+  --yellow: #D97706; --yellow-bg: #FEF3C7; --blue-bg: #DBEAFE;
+  --shadow: 0 1px 3px rgba(0,0,0,.08); --shadow-md: 0 4px 6px rgba(0,0,0,.07);
+  --ff: 'IBM Plex Sans', sans-serif; --fm: 'IBM Plex Mono', monospace;
+}
+body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; font-size: 14px; }
+.sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.sidebar-section { padding: 16px 12px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.3); font-weight: 500; }
+.sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; margin: 1px 8px; color: rgba(255,255,255,.6); font-size: 13px; cursor: pointer; transition: all .2s; text-decoration: none; }
+.sidebar-link:hover { background: var(--sidebar-hover); color: rgba(255,255,255,.9); }
+.sidebar-link.active { background: var(--sidebar-active); color: white; font-weight: 500; }
+.sidebar-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-footer { margin-top: auto; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.sidebar-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: white; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.4); }
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; flex-direction: column; }
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-sub { font-size: 11px; color: var(--text-muted); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.topbar-btn { padding: 7px 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: var(--ff); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s; }
+.topbar-btn:hover { background: #1d4ed8; }
+.btn-outline { background: white; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn-outline:hover { background: var(--accent-light); }
+.content { padding: 24px 28px; flex: 1; }
+.readonly-banner {
+  background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px;
+  padding: 10px 16px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: #1D4ED8;
+}
+.readonly-banner strong { font-weight: 600; }
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.stat-icon.blue { background: var(--blue-bg); } .stat-icon.green { background: var(--green-bg); }
+.stat-icon.yellow { background: var(--yellow-bg); } .stat-icon.red { background: var(--red-bg); }
+.stat-value { font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 6px; font-family: var(--fm); }
+.stat-change { font-size: 12px; color: var(--text-muted); }
+.stat-change.up { color: var(--green); }
+.table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+.table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.table-title { font-size: 14px; font-weight: 600; }
+.table-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.table-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-family: var(--ff); font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all .2s; }
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: #F8FAFC; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 16px; border-bottom: 1px solid #F1F5F9; font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFBFC; }
+.pc-id { font-family: var(--fm); font-size: 12px; color: var(--accent); font-weight: 500; background: var(--accent-light); padding: 3px 8px; border-radius: 5px; display: inline-block; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.green { background: var(--green-bg); color: var(--green); }
+.badge.red { background: var(--red-bg); color: var(--red); }
+.badge.yellow { background: var(--yellow-bg); color: var(--yellow); }
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid var(--border); }
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-btns { display: flex; gap: 4px; }
+.pag-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 6px; background: white; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; color: var(--text); transition: all .2s; font-family: var(--ff); }
+.pag-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pag-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="/logoitu.png" alt="ITU" style="width:120px;display:block;background:white;border-radius:6px;padding:6px">
+  </div>
+  <div class="sidebar-section">Principal</div>
+  <a href="/dashboardread.html" class="sidebar-link active"><span class="sidebar-icon">⊞</span> Inventario</a>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar">A</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-nombre">—</div>
+        <div class="sidebar-user-role" id="sidebar-rol">—</div>
+      </div>
+    </div>
+    <button onclick="cerrarSesion()" style="width:100%;margin-top:8px;padding:8px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#FCA5A5;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(220,38,38,.25)'" onmouseout="this.style.background='rgba(220,38,38,.15)'">
+      ↪ Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Inventario de equipos</span>
+      <span class="topbar-sub">Vista de consulta</span>
+    </div>
+    <div class="topbar-right">
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="readonly-banner">
+      <span>🔒</span>
+      <span><strong>Modo consulta.</strong> Podés ver el estado de los equipos, pero no realizar modificaciones.</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">Total equipos</span><div class="stat-icon blue">🖥</div></div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-change">registrados en el sistema</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">Operativos</span><div class="stat-icon green">✓</div></div>
+        <div class="stat-value" id="stat-operativos">—</div>
+        <div class="stat-change up" id="stat-pct-op">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">En mantenimiento</span><div class="stat-icon yellow">⚙</div></div>
+        <div class="stat-value" id="stat-mantenimiento">—</div>
+        <div class="stat-change" style="color:var(--yellow)">requieren atención</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><span class="stat-label">Fuera de servicio</span><div class="stat-icon red">✕</div></div>
+        <div class="stat-value" id="stat-fuera">—</div>
+        <div class="stat-change" style="color:var(--red)">sin funcionamiento</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <div>
+          <div class="table-title">Equipos registrados</div>
+          <div class="table-sub">Listado completo del inventario</div>
+        </div>
+        <div class="table-filters">
+          <button class="filter-btn active" onclick="filtrar('todos', this)">Todos</button>
+          <button class="filter-btn" onclick="filtrar('operativo', this)">Operativos</button>
+          <button class="filter-btn" onclick="filtrar('mantenimiento', this)">Mantenimiento</button>
+          <button class="filter-btn" onclick="filtrar('fuera de servicio', this)">Fuera de servicio</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID Equipo</th><th>Laboratorio</th><th>Banco</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-equipos">
+          <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">Cargando...</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span class="pagination-info" id="pag-info">—</span>
+        <div class="pagination-btns" id="pag-btns"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const usuario = JSON.parse(localStorage.getItem('usuario'))
+if (!usuario) {
+    window.location.href = '/login.html'
+} else if (usuario.rol !== 'alumno' && usuario.rol !== 'docente') {
+    window.location.href = '/dashboard.html'
+}
+
+document.getElementById('sidebar-nombre').textContent = usuario.nombre
+document.getElementById('sidebar-rol').textContent = usuario.rol.charAt(0).toUpperCase() + usuario.rol.slice(1)
+document.getElementById('avatar').textContent = usuario.nombre.charAt(0).toUpperCase()
+
+function cerrarSesion() { localStorage.removeItem('usuario'); window.location.href = '/login.html' }
+
+let todosLosEquipos = []
+let filtroActual = 'todos'
+let paginaActual = 1
+const porPagina = 8
+
+function badgeEstado(e) {
+  const map = { 'operativo':'green','mantenimiento':'yellow','fuera de servicio':'red' }
+  return `<span class="badge ${map[e]||'blue'}">${e.charAt(0).toUpperCase()+e.slice(1)}</span>`
+}
+
+function renderTabla(datos) {
+  const filtrados = filtroActual==='todos' ? datos : datos.filter(e=>e.estado===filtroActual)
+  const total = filtrados.length
+  const inicio = (paginaActual-1)*porPagina
+  const pagina = filtrados.slice(inicio, inicio+porPagina)
+  const tbody = document.getElementById('tabla-equipos')
+
+  tbody.innerHTML = pagina.length === 0
+    ? `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted)">No hay equipos</td></tr>`
+    : pagina.map(e => `
+      <tr>
+        <td><span class="pc-id">${e.id}</span></td>
+        <td>${e.laboratorio}</td>
+        <td>Banco ${e.banco}</td>
+        <td>${badgeEstado(e.estado)}</td>
+      </tr>`).join('')
+
+  document.getElementById('pag-info').textContent = `Mostrando ${Math.min(inicio+1,total)}–${Math.min(inicio+porPagina,total)} de ${total} equipos`
+
+  const totalPags = Math.ceil(total/porPagina)
+  const btns = document.getElementById('pag-btns')
+  btns.innerHTML = ''
+  if (totalPags <= 1) return
+  const prev = document.createElement('button')
+  prev.className='pag-btn'; prev.textContent='←'
+  prev.onclick = () => { if(paginaActual>1){paginaActual--;renderTabla(todosLosEquipos)} }
+  btns.appendChild(prev)
+  for(let i=1;i<=totalPags;i++){
+    const b=document.createElement('button')
+    b.className='pag-btn'+(i===paginaActual?' active':'')
+    b.textContent=i; b.onclick=()=>{paginaActual=i;renderTabla(todosLosEquipos)}
+    btns.appendChild(b)
+  }
+  const next=document.createElement('button')
+  next.className='pag-btn'; next.textContent='→'
+  next.onclick=()=>{if(paginaActual<totalPags){paginaActual++;renderTabla(todosLosEquipos)}}
+  btns.appendChild(next)
+}
+
+function filtrar(estado, btn) {
+  filtroActual=estado; paginaActual=1
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active')
+  renderTabla(todosLosEquipos)
+}
+
+async function cargarDatos() {
+  try {
+    const [resEquipos, resStats] = await Promise.all([
+      fetch('/api/equipos'),
+      fetch('/api/stats')
+    ])
+    todosLosEquipos = await resEquipos.json()
+    const stats = await resStats.json()
+
+    document.getElementById('stat-total').textContent = stats.total
+    const op    = stats.estados.find(e=>e.estado==='operativo')?.cantidad || 0
+    const mant  = stats.estados.find(e=>e.estado==='mantenimiento')?.cantidad || 0
+    const fuera = stats.estados.find(e=>e.estado==='fuera de servicio')?.cantidad || 0
+    document.getElementById('stat-operativos').textContent = op
+    document.getElementById('stat-mantenimiento').textContent = mant
+    document.getElementById('stat-fuera').textContent = fuera
+    document.getElementById('stat-pct-op').textContent = stats.total > 0
+      ? Math.round((op/stats.total)*100)+'% del total' : '—'
+
+    renderTabla(todosLosEquipos)
+  } catch(err) {
+    console.error('Error:', err)
+  }
+}
+
+cargarDatos()
+</script>
+</body>
+</html>
