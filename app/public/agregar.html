@@ -85,9 +85,7 @@ body { font-family: var(--ff); background: var(--bg); color: var(--text); min-he
   <a href="/dashboard.html" class="sidebar-link"><span class="sidebar-icon">⊞</span> Dashboard</a>
   <a href="/buscar.html" class="sidebar-link"><span class="sidebar-icon">🔍</span> Buscar PC</a>
   <div class="sidebar-section">Gestión</div>
-  <a href="#" class="sidebar-link"><span class="sidebar-icon">🏫</span> Laboratorios</a>
   <a href="/responsables.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Responsables</a>
-  <a href="#" class="sidebar-link"><span class="sidebar-icon">🔧</span> Mantenimiento</a>
   <div class="sidebar-footer">
     <div class="sidebar-user">
       <div class="sidebar-avatar" id="avatar">A</div>
@@ -396,7 +394,7 @@ document.getElementById('form-agregar').addEventListener('submit', async (e) => 
   const id    = `PC-LAB${labCodigo[lab]}-${String(banco).padStart(3,'0')}`
 
   try {
-    // 1. Guardar en SQL server
+    // 1. Guardar en SQL SERVER
     const resSql = await fetch('/api/equipos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
